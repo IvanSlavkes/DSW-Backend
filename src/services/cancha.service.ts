@@ -4,6 +4,10 @@ export async function getAllCanchas() {
   return await prisma.cancha.findMany();
 }
 
+export async function getCancha(id: number) {
+  return await prisma.cancha.findUnique({ where: { id } });
+}
+
 export async function createCancha(data: {
   nombre: string;
   direccion: string;

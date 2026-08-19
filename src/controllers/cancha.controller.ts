@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createCancha, getAllCanchas, updateCancha, deleteCancha } from "../services/cancha.service.js";
+import { createCancha, getAllCanchas, getCancha, updateCancha, deleteCancha } from "../services/cancha.service.js";
 import { canchaSchema } from "../schemas/cancha.schema.js";
 
 export async function listarCanchas(req: Request, res: Response) {
