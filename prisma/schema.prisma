@@ -12,126 +12,125 @@ datasource db {
   provider = "postgresql"
 }
 
-model Usuario {
-  id                      Int      @id @default(autoincrement())
-  nombre                  String
-  apellido                String
-  email                   String   @unique
-  contraseña             String
-  descripcion             String?
-  localidadId             String
-  localidadNombre         String
-  posicion                String
-  promedioEstrellas       Float    @default(0)
-  cantidadPartidosJugados Int      @default(0)
-  fechaNac                DateTime
-  rolSistema              String   @default("Usuario") // Aca podria ser Usuario | Moderador | Admin
-
-  solicitudesEnviadas  SolAmistad[] @relation("Solicitante")
-  solicitudesRecibidas SolAmistad[] @relation("Receptor")
-
-  notificaciones  Notificacion[]
-  partidosCreados Partido[]
-
-  calificacionesHechas    Calificacion[] @relation("Calificador")
-  calificacionesRecibidas Calificacion[] @relation("Calificado")
-
-  posicionesOcupadas    PosicionEnEquipo[] @relation("Ocupante")
-  posicionesSolicitadas PosicionEnEquipo[] @relation("Solicitante_posicion")
-}
-
-model Partido {
+model User {
   id            Int      @id @default(autoincrement())
-  nombrePartido String
-  fecha         DateTime
-  hora          String
-  tipoCancha    String
-  privacidad    String
-  estado        String   @default("abierto")
-  canchaId      Int
-  creadorId     Int
+  name          String
+  lastName      String
+  email         String   @unique
+  password      String
+  description   String?
+  locationId    String
+  locationName  String
+  position      String
+  averageRating Float    @default(0)
+  matchesPlayed Int      @default(0)
+  birthDate     DateTime
+  role          String   @default("user") // user | moderator | admin
 
-  cancha         Cancha          @relation(fields: [canchaId], references: [id])
-  creador        Usuario         @relation(fields: [creadorId], references: [id])
-  calificaciones Calificacion[]
-  notificaciones Notificacion[]
-  equipos        EquipoPartido[]
+  sentFriendRequests     FriendRequest[] @relation("Requester")
+  receivedFriendRequests FriendRequest[] @relation("Receiver")
+
+  notifications  Notification[]
+  createdMatches Match[]
+
+  ratingsGiven    Rating[] @relation("Rater")
+  ratingsReceived Rating[] @relation("Rated")
+
+  occupiedPositions  TeamPosition[] @relation("Occupant")
+  requestedPositions TeamPosition[] @relation("PositionRequester")
 }
 
-model Cancha {
-  id              Int    @id @default(autoincrement())
-  nombre          String
-  direccion       String
-  tipo            String
-  localidadId     String
-  localidadNombre String
-
-  partidos Partido[]
-}
-
-model SolAmistad {
-  id            Int      @id @default(autoincrement())
-  solicitanteId Int
-  receptorId    Int
-  estado        String
-  fecha         DateTime @default(now())
-
-  solicitante Usuario @relation("Solicitante", fields: [solicitanteId], references: [id])
-  receptor    Usuario @relation("Receptor", fields: [receptorId], references: [id])
-}
-
-model Notificacion {
+model Match {
   id        Int      @id @default(autoincrement())
-  usuarioId Int
-  partidoId Int?
-  tipo      String
-  mensaje   String
-  fecha     DateTime @default(now())
-  leida     Boolean  @default(false)
+  name      String
+  date      DateTime
+  time      String
+  fieldType String
+  privacy   String
+  status    String   @default("open")
+  fieldId   Int
+  creatorId Int
 
-  usuario Usuario  @relation(fields: [usuarioId], references: [id])
-  partido Partido? @relation(fields: [partidoId], references: [id]) // El "?" es para coincidir con el "Int?"
+  field         Field          @relation(fields: [fieldId], references: [id])
+  creator       User           @relation(fields: [creatorId], references: [id])
+  ratings       Rating[]
+  notifications Notification[]
+  teams         MatchTeam[]
 }
 
-model Calificacion {
-  id            Int      @id @default(autoincrement())
-  partidoId     Int
-  calificadorId Int
-  calificadoId  Int
-  estrellas     Int
-  comentario    String
-  fecha         DateTime @default(now())
+model Field {
+  id           Int    @id @default(autoincrement())
+  name         String
+  address      String
+  type         String
+  locationId   String
+  locationName String
 
-  partido     Partido @relation(fields: [partidoId], references: [id])
-  calificador Usuario @relation("Calificador", fields: [calificadorId], references: [id])
-  calificado  Usuario @relation("Calificado", fields: [calificadoId], references: [id])
-
-  //Esto es para que no pueda haber dos calificaciones de un mismo usuario a un X usuario en un partido
-  //Es decir, no puede haber dos veces la misma combinacion de [partido + calificador + calificado]
-  @@unique([partidoId, calificadorId, calificadoId])
+  matches Match[]
 }
 
-model EquipoPartido {
-  id        Int    @id @default(autoincrement())
-  nombre    String
-  color     String
-  partidoId Int
+model FriendRequest {
+  id          Int      @id @default(autoincrement())
+  requesterId Int
+  receiverId  Int
+  status      String
+  date        DateTime @default(now())
 
-  partido            Partido            @relation(fields: [partidoId], references: [id])
-  posicionesEnEquipo PosicionEnEquipo[]
+  requester User @relation("Requester", fields: [requesterId], references: [id])
+  receiver  User @relation("Receiver", fields: [receiverId], references: [id])
 }
 
-model PosicionEnEquipo {
-  id                Int      @id @default(autoincrement())
-  tipoPosicion      String
-  estado            String   @default("libre")
-  rol               String   @default("jugador")
-  equipoEnPartidoId Int
-  ocupanteId        Int?
-  solicitanteId     Int?
-  fecha             DateTime @default(now())
+model Notification {
+  id      Int      @id @default(autoincrement())
+  userId  Int
+  matchId Int?
+  type    String
+  message String
+  date    DateTime @default(now())
+  read    Boolean  @default(false)
 
-  equipoEnPartido EquipoPartido @relation(fields: [equipoEnPartidoId], references: [id])
-  ocupante        Usuario?      @relation("Ocupante", fields: [ocupanteId], references: [id])
-  solicitante     Usuario?      @relation("Solicitante_posicion", fields: [solicitanteId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+  match Match? @relation(fields: [matchId], references: [id]) // "?" para coincidir con "Int?"
+}
+
+model Rating {
+  id      Int      @id @default(autoincrement())
+  matchId Int
+  raterId Int
+  ratedId Int
+  stars   Int
+  comment String
+  date    DateTime @default(now())
+
+  match Match @relation(fields: [matchId], references: [id])
+  rater User  @relation("Rater", fields: [raterId], references: [id])
+  rated User  @relation("Rated", fields: [ratedId], references: [id])
+
+  // Evita dos ratings del mismo usuario a otro usuario en el mismo partido
+  @@unique([matchId, raterId, ratedId])
+}
+
+model MatchTeam {
+  id      Int    @id @default(autoincrement())
+  name    String
+  color   String
+  matchId Int
+
+  match     Match          @relation(fields: [matchId], references: [id])
+  positions TeamPosition[]
+}
+
+model TeamPosition {
+  id           Int      @id @default(autoincrement())
+  positionType String
+  status       String   @default("free")
+  role         String   @default("player")
+  matchTeamId  Int
+  occupantId   Int?
+  requesterId  Int?
+  date         DateTime @default(now())
+
+  matchTeam MatchTeam @relation(fields: [matchTeamId], references: [id])
+  occupant  User?     @relation("Occupant", fields: [occupantId], references: [id])
+  requester User?     @relation("PositionRequester", fields: [requesterId], references: [id])
 }

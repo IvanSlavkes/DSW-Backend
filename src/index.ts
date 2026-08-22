@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 
-import canchaRoutes from "./routes/cancha.routes.js"
+import fieldRoutes from "./routes/field.routes.js"
 import partidoRoutes from "./routes/partido.routes.js"
 import usuariosRoutes from "./routes/usuario.routes.js"
 import equipoPartidoRoutes from "./routes/equipopartido.routes.js"
@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.use("/canchas", canchaRoutes);
+app.use("/fields", fieldRoutes);
 app.use("/partidos", partidoRoutes);
 app.use("/usuarios", usuariosRoutes);
 app.use("/equipos-partido", equipoPartidoRoutes);
