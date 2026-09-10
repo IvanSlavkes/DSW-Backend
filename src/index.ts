@@ -10,7 +10,7 @@ import teamPositionRoutes from "./routes/team-position.routes.js"
 import friendRequestRoutes from "./routes/friend-request.routes.js"
 import notificationRoutes from "./routes/notification.routes.js"
 import calificationRoutes from "./routes/rating.routes.js"
-
+import localityRoutes from "./routes/locality.routes.js"
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,7 +26,8 @@ app.use("/match-teams", matchTeamRoutes);
 app.use("/team-positions", teamPositionRoutes);
 app.use("/friend-requests", friendRequestRoutes);
 app.use("/notifications", notificationRoutes);
-app.use("/ratings", calificationRoutes)
+app.use("/ratings", calificationRoutes);
+app.use("/localities", localityRoutes);
 
 
 // Ruta de prueba, para confirmar que el server levanta

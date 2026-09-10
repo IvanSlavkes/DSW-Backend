@@ -134,3 +134,8 @@ model TeamPosition {
   occupant  User?     @relation("Occupant", fields: [occupantId], references: [id])
   requester User?     @relation("PositionRequester", fields: [requesterId], references: [id])
 }
+
+model Locality {
+  id     String @id
+  nombre String
+}
