@@ -20,15 +20,15 @@
   },
   "homepage": "https://github.com/IvanSlavkes/DSW-Backend#readme",
   "dependencies": {
-    "@prisma/adapter-pg": "^7.9.1",
-    "@prisma/client": "^7.9.1",
+    "@prisma/adapter-pg": "^6.12.0",
+    "@prisma/client": "^6.12.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "node-fetch": "^3.3.2",
-    "prisma": "^7.9.1",
+    "prisma": "^6.12.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -41,5 +41,12 @@
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"
+  },
+  "allowScripts": {
+    "@prisma/client": true,
+    "@prisma/engines": true,
+    "bcrypt": true,
+    "esbuild": true,
+    "prisma": true
   }
 }
