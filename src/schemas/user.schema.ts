@@ -6,9 +6,8 @@ export const userSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   description: z.string().optional(),
-  locationId: z.string(),
-  locationName: z.string(),
   position: z.string(),
   birthDate: z.string().transform((val) => new Date(val)),
+  localityId: z.string(),   
   role: z.string().default("user")
 });
