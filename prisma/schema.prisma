@@ -20,13 +20,14 @@ model User {
   email         String   @unique
   password      String
   description   String?
-  locationId    String
-  locationName  String
   position      String
   averageRating Float    @default(0)
   matchesPlayed Int      @default(0)
   birthDate     DateTime
   role          String   @default("user") // user | moderator | admin
+
+  localityId String?
+  locality   Locality? @relation(fields: [localityId], references: [id])
 
   sentFriendRequests     FriendRequest[] @relation("Requester")
   receivedFriendRequests FriendRequest[] @relation("Receiver")
@@ -60,14 +61,15 @@ model Match {
 }
 
 model Field {
-  id           Int    @id @default(autoincrement())
-  name         String
-  address      String
-  type         String
-  locationId   String
-  locationName String
+  id         Int    @id @default(autoincrement())
+  name       String
+  address    String
+  type       String
+  locationId String
 
-  matches Match[]
+  localityId String
+  locality   Locality @relation(fields: [localityId], references: [id])
+  matches    Match[]
 }
 
 model FriendRequest {
@@ -137,6 +139,8 @@ model TeamPosition {
 }
 
 model Locality {
-  id     String @id
+  id     String  @id
   nombre String
+  users  User[]
+  fields Field[]
 }
