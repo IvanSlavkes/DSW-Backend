@@ -1,9 +1,11 @@
-import type { Request, Response } from "express";
-import { getAllMatchTeams, 
-  getMatchTeamById, 
-  createMatchTeam, 
-  updateMatchTeam, 
-  deleteMatchTeam } from "../services/match-team.service.js";
+import type { Request, Response } from 'express';
+import {
+  getAllMatchTeams,
+  getMatchTeamById,
+  createMatchTeam,
+  updateMatchTeam,
+  deleteMatchTeam,
+} from '../services/match-team.service.js';
 
 export async function listMatchTeams(req: Request, res: Response) {
   const teams = await getAllMatchTeams();
@@ -13,7 +15,7 @@ export async function listMatchTeams(req: Request, res: Response) {
 export async function getMatchTeamHandler(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const team = await getMatchTeamById(id);
-  if (!team) return res.status(404).json({ mensaje: "Equipo no encontrado" });
+  if (!team) return res.status(404).json({ mensaje: 'Equipo no encontrado' });
   res.json(team);
 }
 
@@ -22,8 +24,9 @@ export async function createMatchTeamHandler(req: Request, res: Response) {
   try {
     const newTeam = await createMatchTeam({ name, color, matchId });
     res.status(201).json(newTeam);
-  } catch {
-    res.status(500).json({ mensaje: "Error al crear equipo" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al crear equipo' });
   }
 }
 
@@ -32,17 +35,19 @@ export async function updateMatchTeamHandler(req: Request, res: Response) {
   try {
     const updated = await updateMatchTeam(id, req.body);
     res.json(updated);
-  } catch {
-    res.status(404).json({ mensaje: "Equipo no encontrado" });
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ mensaje: 'Equipo no encontrado' });
   }
 }
 
 export async function deleteMatchTeamHandler(req: Request, res: Response) {
- const id = parseInt(req.params.id as string, 10);
+  const id = parseInt(req.params.id as string, 10);
   try {
     await deleteMatchTeam(id);
     res.status(204).send();
-  } catch {
-    res.status(404).json({ mensaje: "Equipo no encontrado" });
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ mensaje: 'Equipo no encontrado' });
   }
 }
