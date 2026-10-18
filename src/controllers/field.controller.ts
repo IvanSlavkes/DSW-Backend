@@ -28,7 +28,6 @@ export async function getFieldHandler(req: Request, res: Response) {
 
 export async function createFieldHandler(req: Request, res: Response) {
   const result = fieldSchema.safeParse(req.body);
-
   if (!result.success) {
     return res.status(400).json({ errores: result.error.issues});
   }

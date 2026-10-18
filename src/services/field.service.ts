@@ -12,7 +12,6 @@ export async function createField(data: {
   name: string;
   address: string;
   type: string;
-  locationId: string;
   localityId: string;
 }) {
   return await prisma.field.create({ data });
@@ -24,7 +23,6 @@ export async function updateField(
     name: string;
     address: string;
     type: string;
-    locationId: string;
     localityId: string;
   }>,
 ) {

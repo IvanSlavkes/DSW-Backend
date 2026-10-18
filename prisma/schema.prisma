@@ -61,11 +61,10 @@ model Match {
 }
 
 model Field {
-  id         Int    @id @default(autoincrement())
-  name       String
-  address    String
-  type       String
-  locationId String
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
+  type    String
 
   localityId String
   locality   Locality @relation(fields: [localityId], references: [id])
