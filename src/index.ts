@@ -13,7 +13,7 @@ import calificationRoutes from "./routes/rating.routes.js";
 import localityRoutes from "./routes/locality.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 
-import { verifyToken } from "./middleware/auth.middleware.js"; // 👈 importamos el guardia
+import verifyToken from "./middleware/auth.middleware.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
