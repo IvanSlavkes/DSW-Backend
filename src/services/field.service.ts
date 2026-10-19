@@ -1,11 +1,11 @@
 import { prisma } from '../lib/prisma.js';
 
 export async function getAllFields() {
-  return await prisma.field.findMany();
+  return await prisma.field.findMany({ include: {locality: true}});
 }
 
 export async function getFieldById(id: number) {
-  return await prisma.field.findUnique({ where: { id } });
+  return await prisma.field.findUnique({ where: { id }, include: {locality: true} });
 }
 
 export async function createField(data: {

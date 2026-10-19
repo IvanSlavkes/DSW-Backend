@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma.js";
 
 export async function getAllLocalities() {
-  return await prisma.locality.findMany();
+  return await prisma.locality.findMany({ orderBy: { nombre: "asc" } });
 }
 
 export async function getLocalityById(id: string) {

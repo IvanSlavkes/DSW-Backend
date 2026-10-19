@@ -5,7 +5,7 @@ import {
   getLocalityById, 
   createLocality, 
   updateLocality, 
-  deleteLocality 
+  deleteLocality
 } from "../services/locality.service.js";
 
 type LocalidadApi = {
@@ -19,8 +19,12 @@ type GeoRefResponse = {
 
 // Listar todas las localidades guardadas en tu base
 export async function listLocalities(req: Request, res: Response) {
-  const localities = await getAllLocalities();
-  res.json(localities);
+  try {
+    res.status(200).json(await getAllLocalities());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching localities" });
+  }
 }
 
 // Obtener una localidad por ID

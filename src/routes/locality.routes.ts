@@ -4,7 +4,7 @@ import {
   getLocalityHandler, 
   createLocalityHandler, 
   updateLocalityHandler, 
-  deleteLocalityHandler 
+  deleteLocalityHandler
 } from "../controllers/locality.controller.js";
 
 const router = Router();
