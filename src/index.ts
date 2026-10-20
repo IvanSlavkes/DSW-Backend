@@ -24,6 +24,7 @@ app.use(express.json());
 
 // Rutas públicas (no necesitan token)
 app.use("/auth", authRoutes); // 👈 login y register
+app.use("/localities", localityRoutes);
 
 // Rutas protegidas (CRUDs)
 app.use("/fields", verifyToken, fieldRoutes);
@@ -34,7 +35,7 @@ app.use("/team-positions", verifyToken, teamPositionRoutes);
 app.use("/friend-requests", verifyToken, friendRequestRoutes);
 app.use("/notifications", verifyToken, notificationRoutes);
 app.use("/ratings", verifyToken, calificationRoutes);
-app.use("/localities", verifyToken, localityRoutes);
+
 
 // Ruta de prueba
 app.get('/', (req, res) => {
