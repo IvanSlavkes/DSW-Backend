@@ -62,7 +62,15 @@ router.put("/me", async (req: Request, res: Response) => {
 
     // 🔹 Convertir localityId a número si viene
     if (dataToUpdate.localityId) {
-      dataToUpdate.localityId = Number(dataToUpdate.localityId);
+      dataToUpdate.localityId = String(dataToUpdate.localityId);
+    }
+
+    if (dataToUpdate.birthDate) {
+      dataToUpdate.birthDate = new Date(dataToUpdate.birthDate);
+    }
+
+    if (!dataToUpdate.password) {
+      delete dataToUpdate.password;
     }
 
     const user = await prisma.user.update({

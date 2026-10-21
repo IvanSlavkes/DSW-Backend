@@ -6,6 +6,7 @@ import {
   updateMatch, 
   deleteMatch 
 } from "../services/match.service.js";
+import { createMatchSchema, updateMatchSchema } from "../schemas/match.schema.js";
 
 // Listar partidos
 export async function listMatches(req: Request, res: Response) {
@@ -23,13 +24,19 @@ const id = parseInt(req.params.id as string, 10);
 
 // Crear partido
 export async function createMatchHandler(req: Request, res: Response) {
-  const { name, date, time, fieldType, privacy, fieldId, creatorId } = req.body;
+  const result = createMatchSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ errores: result.error.issues });
+  }
+
+  const { name, description, date, time, duration, privacy, fieldId, creatorId } = result.data;
   try {
     const nuevoMatch = await createMatch({ 
       name, 
-      date: new Date(date), 
+      description,
+      date, 
       time, 
-      fieldType, 
+      duration,
       privacy, 
       fieldId, 
       creatorId 
@@ -43,8 +50,13 @@ export async function createMatchHandler(req: Request, res: Response) {
 // Actualizar partido
 export async function updateMatchHandler(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
+  const result = updateMatchSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ errores: result.error.issues });
+  }
+
   try {
-    const matchUpdated = await updateMatch(id, req.body);
+    const matchUpdated = await updateMatch(id, result.data);
     res.json(matchUpdated);
   } catch (error) {
     res.status(404).json({ mensaje: "Partido no encontrado" });

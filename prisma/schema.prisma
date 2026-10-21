@@ -43,13 +43,16 @@ model User {
 }
 
 model Match {
-  id        Int      @id @default(autoincrement())
-  name      String
-  date      DateTime
-  time      String
-  fieldType String
-  privacy   String
-  status    String   @default("open")
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  date        DateTime
+  time        String
+  duration    Int      @default(60)
+  privacy     String
+  status      String   @default("open")
+  createdAt   DateTime @default(now())
+
   fieldId   Int
   creatorId Int
 
@@ -64,7 +67,8 @@ model Field {
   id      Int    @id @default(autoincrement())
   name    String
   address String
-  type    String
+  type    String // "5" | "7" | "11"
+  price   Float  @default(0) // Precio total de la cancha
 
   localityId String
   locality   Locality @relation(fields: [localityId], references: [id])

@@ -3,7 +3,13 @@ import { prisma } from "../lib/prisma.js";
 // Listar todos los partidos
 export async function getAllMatches() {
   return await prisma.match.findMany({
-    include: { field: true, creator: true, ratings: true, notifications: true, teams: true }
+    include: {
+      field: true,
+      creator: true,
+      ratings: true,
+      notifications: true,
+      teams: { include: { positions: true } },
+    }
   });
 }
 
@@ -11,16 +17,23 @@ export async function getAllMatches() {
 export async function getMatchById(id: number) {
   return await prisma.match.findUnique({
     where: { id },
-    include: { field: true, creator: true, ratings: true, notifications: true, teams: true }
+    include: {
+      field: true,
+      creator: true,
+      ratings: true,
+      notifications: true,
+      teams: { include: { positions: true } },
+    }
   });
 }
 
 // Crear partido
 export async function createMatch(data: { 
   name: string; 
+  description?: string;
   date: Date; 
   time: string; 
-  fieldType: string; 
+  duration?: number;
   privacy: string; 
   fieldId: number; 
   creatorId: number; 
@@ -31,9 +44,10 @@ export async function createMatch(data: {
 // Actualizar partido
 export async function updateMatch(id: number, data: Partial<{ 
   name: string; 
+  description: string | null;
   date: Date; 
   time: string; 
-  fieldType: string; 
+  duration: number;
   privacy: string; 
   status: string; 
 }>) {
