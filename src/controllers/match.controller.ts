@@ -3,6 +3,7 @@ import {
   getAllMatches, 
   getMatchById, 
   createMatch, 
+  MatchCreationError,
   updateMatch, 
   deleteMatch 
 } from "../services/match.service.js";
@@ -26,24 +27,28 @@ const id = parseInt(req.params.id as string, 10);
 export async function createMatchHandler(req: Request, res: Response) {
   const result = createMatchSchema.safeParse(req.body);
   if (!result.success) {
-    return res.status(400).json({ errores: result.error.issues });
+    return res.status(400).json({ errors: result.error.issues });
   }
 
-  const { name, description, date, time, duration, privacy, fieldId, creatorId } = result.data;
+  const creatorId = (req as Request & { user?: { id: number } }).user?.id;
+  if (!creatorId) return res.status(401).json({ error: "Authentication required" });
+
   try {
-    const nuevoMatch = await createMatch({ 
-      name, 
-      description,
-      date, 
-      time, 
-      duration,
-      privacy, 
-      fieldId, 
-      creatorId 
+    const match = await createMatch({
+      ...result.data,
+      description: result.data.description,
+      duration: result.data.duration,
+      positionType: result.data.positionType,
+      secondaryPositionType: result.data.secondaryPositionType,
+      creatorId,
     });
-    res.status(201).json(nuevoMatch);
+    return res.status(201).json(match);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al crear partido" });
+    if (error instanceof MatchCreationError) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+    console.error("Failed to create match:", error);
+    return res.status(500).json({ error: "Failed to create match" });
   }
 }
 
