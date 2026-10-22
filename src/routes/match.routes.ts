@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { 
   listMatches, 
+  listMyMatches,
   getMatchHandler, 
   createMatchHandler, 
   updateMatchHandler, 
@@ -10,6 +11,7 @@ import {
 const router = Router();
 
 router.get("/", listMatches);
+router.get("/mine", listMyMatches);
 router.get("/:id", getMatchHandler);
 router.post("/", createMatchHandler);
 router.put("/:id", updateMatchHandler);

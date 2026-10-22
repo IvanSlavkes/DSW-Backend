@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { 
   getAllMatches, 
+  getMatchesForUser,
   getMatchById, 
   createMatch, 
   updateMatch, 
@@ -12,6 +13,18 @@ import { createMatchSchema, updateMatchSchema } from "../schemas/match.schema.js
 export async function listMatches(req: Request, res: Response) {
   const matches = await getAllMatches();
   res.json(matches);
+}
+
+export async function listMyMatches(req: Request, res: Response) {
+  const userId = Number((req as Request & { user?: { id: number } }).user?.id);
+  if (!userId) return res.status(401).json({ mensaje: "No autorizado" });
+  try {
+    const matches = await getMatchesForUser(userId);
+    return res.json(matches);
+  } catch (error) {
+    console.error("Error al consultar los partidos del usuario:", error);
+    return res.status(500).json({ mensaje: "No se pudieron consultar tus partidos" });
+  }
 }
 
 // Obtener partido por ID

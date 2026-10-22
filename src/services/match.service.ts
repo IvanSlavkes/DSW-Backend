@@ -13,6 +13,30 @@ export async function getAllMatches() {
   });
 }
 
+export async function getMatchesForUser(userId: number) {
+  return await prisma.match.findMany({
+    where: {
+      OR: [
+        { creatorId: userId },
+        {
+          teams: {
+            some: {
+              positions: {
+                some: { OR: [{ occupantId: userId }, { requesterId: userId }] },
+              },
+            },
+          },
+        },
+      ],
+    },
+    include: {
+      field: true,
+      teams: { include: { positions: true } },
+    },
+    orderBy: { date: "asc" },
+  });
+}
+
 // Obtener partido por ID
 export async function getMatchById(id: number) {
   return await prisma.match.findUnique({
