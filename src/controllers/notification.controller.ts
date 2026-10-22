@@ -8,7 +8,9 @@ import {
 } from '../services/notification.service.js';
 
 export async function listNotifications(req: Request, res: Response) {
-  const notifications = await getAllNotifications();
+  const userId = Number((req as Request & { user?: { id: number } }).user?.id);
+  if (!userId) return res.status(401).json({ mensaje: 'No autorizado' });
+  const notifications = await getAllNotifications(userId);
   res.json(notifications);
 }
 

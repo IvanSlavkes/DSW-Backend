@@ -14,6 +14,7 @@ import localityRoutes from "./routes/locality.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 
 import verifyToken from "./middleware/auth.middleware.js";
+import { createUpcomingMatchReminders } from "./services/match-reminder.service.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,4 +45,12 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  void createUpcomingMatchReminders().catch((error) =>
+    console.error("Error revisando recordatorios de partidos:", error),
+  );
+  setInterval(() => {
+    void createUpcomingMatchReminders().catch((error) =>
+      console.error("Error revisando recordatorios de partidos:", error),
+    );
+  }, 60_000);
 });

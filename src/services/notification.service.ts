@@ -2,8 +2,9 @@ import { prisma } from '../lib/prisma.js';
 import { sendNotificationEmail } from '../lib/mailer.js';
 
 // Listar todas las notificaciones
-export async function getAllNotifications() {
+export async function getAllNotifications(userId: number) {
   return await prisma.notification.findMany({
+    where: { userId },
     include: { user: true, match: true },
   });
 }
