@@ -21,13 +21,14 @@ export async function getTeamPositionHandler(req: Request, res: Response) {
 }
 
 export async function createTeamPositionHandler(req: Request, res: Response) {
-  const { positionType, matchTeamId, occupantId, requesterId, role } = req.body;
+  const { positionType, secondaryPositionType, guestName, matchTeamId, occupantId, role } = req.body;
   try {
     const newPosition = await createTeamPosition({
       positionType,
+      secondaryPositionType,
+      guestName,
       matchTeamId,
       occupantId,
-      requesterId,
       role,
     });
     res.status(201).json(newPosition);

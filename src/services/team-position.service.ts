@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js';
 // Listar todas las posiciones
 export async function getAllTeamPositions() {
   return await prisma.teamPosition.findMany({
-    include: { matchTeam: true, occupant: true, requester: true },
+    include: { matchTeam: true, occupant: true },
   });
 }
 
@@ -11,16 +11,17 @@ export async function getAllTeamPositions() {
 export async function getTeamPositionById(id: number) {
   return await prisma.teamPosition.findUnique({
     where: { id },
-    include: { matchTeam: true, occupant: true, requester: true },
+    include: { matchTeam: true, occupant: true },
   });
 }
 
 // Crear posición
 export async function createTeamPosition(data: {
-  positionType: string;
+  positionType?: string | null;
+  secondaryPositionType?: string | null;
+  guestName?: string | null;
   matchTeamId: number;
   occupantId?: number;
-  requesterId?: number;
   role?: string;
 }) {
   return await prisma.teamPosition.create({ data });
@@ -33,7 +34,9 @@ export async function updateTeamPosition(
     status?: string;
     role?: string;
     occupantId?: number;
-    requesterId?: number;
+    positionType?: string | null;
+    secondaryPositionType?: string | null;
+    guestName?: string | null;
   },
 ) {
   return await prisma.teamPosition.update({ where: { id }, data });

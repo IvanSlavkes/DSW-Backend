@@ -39,7 +39,7 @@ model User {
   ratingsReceived Rating[] @relation("Rated")
 
   occupiedPositions  TeamPosition[] @relation("Occupant")
-  requestedPositions TeamPosition[] @relation("PositionRequester")
+  positionRequests  PositionRequest[] @relation("PositionRequester")
 }
 
 model Match {
@@ -124,21 +124,41 @@ model MatchTeam {
 
   match     Match          @relation(fields: [matchId], references: [id])
   positions TeamPosition[]
+  requests  PositionRequest[]
 }
 
 model TeamPosition {
-  id           Int      @id @default(autoincrement())
-  positionType String
-  status       String   @default("free")
-  role         String   @default("player")
-  matchTeamId  Int
-  occupantId   Int?
-  requesterId  Int?
-  date         DateTime @default(now())
+  id                    Int      @id @default(autoincrement())
+  positionType          String?
+  secondaryPositionType String?
+  guestName             String?
+  status                String   @default("free") // free | occupied
+  role                  String   @default("player") // player | captain
+  matchTeamId           Int
+  occupantId            Int?
+  date                  DateTime @default(now())
 
   matchTeam MatchTeam @relation(fields: [matchTeamId], references: [id])
   occupant  User?     @relation("Occupant", fields: [occupantId], references: [id])
-  requester User?     @relation("PositionRequester", fields: [requesterId], references: [id])
+
+  @@index([matchTeamId])
+  @@index([occupantId])
+}
+
+model PositionRequest {
+  id                    Int      @id @default(autoincrement())
+  matchTeamId           Int
+  userId                Int
+  positionType          String?
+  secondaryPositionType String?
+  status                String   @default("pending") // pending | accepted | rejected
+  date                  DateTime @default(now())
+
+  matchTeam MatchTeam @relation(fields: [matchTeamId], references: [id], onDelete: Cascade)
+  user      User      @relation("PositionRequester", fields: [userId], references: [id])
+
+  @@unique([matchTeamId, userId])
+  @@index([userId])
 }
 
 model Locality {
