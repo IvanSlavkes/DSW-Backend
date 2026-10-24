@@ -1,11 +1,16 @@
 import { prisma } from '../lib/prisma.js';
 import { sendNotificationEmail } from '../lib/mailer.js';
 
+const notificationInclude = {
+  user: { select: { id: true, name: true, lastName: true } },
+  match: true,
+};
+
 // Listar todas las notificaciones
 export async function getAllNotifications(userId: number) {
   return await prisma.notification.findMany({
     where: { userId },
-    include: { user: true, match: true },
+    include: notificationInclude,
   });
 }
 
@@ -13,7 +18,7 @@ export async function getAllNotifications(userId: number) {
 export async function getNotificationById(id: number) {
   return await prisma.notification.findUnique({
     where: { id },
-    include: { user: true, match: true },
+    include: notificationInclude,
   });
 }
 
