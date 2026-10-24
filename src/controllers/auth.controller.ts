@@ -15,7 +15,8 @@ export const register = async (req: Request, res: Response) => {
       data: { ...parsed, password: hashedPassword },
     });
 
-    res.status(201).json({ mensaje: "Usuario registrado exitosamente", user });
+        const { password: _password, ...safeUser } = user;
+    res.status(201).json({ mensaje: "Usuario registrado exitosamente", user: safeUser });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }

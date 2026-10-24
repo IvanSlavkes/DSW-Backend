@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { userSchema } from "../schemas/user.schema.js";
+import { userSchema, userUpdateSchema } from '../schemas/user.schema.js';
+import { isAdmin, isOwnerOrAdmin } from '../lib/permissions.js';
 import {
   getAllUsers,
   getUserById,
@@ -26,8 +27,12 @@ export async function listUsers(req: Request, res: Response) {
 }
 
 // Obtener usuario por ID
+// Obtener usuario por ID (dueño o admin)
 export async function getUserHandler(req: Request, res: Response) {
   const id = Number(req.params.id);
+  if (!isOwnerOrAdmin(req, id)) {
+    return res.status(403).json({ error: "No tenés permiso para ver este usuario" });
+  }
   try {
     const user = await getUserById(id);
     if (!user) {
@@ -72,15 +77,24 @@ export async function createUserHandler(req: Request, res: Response) {
 }
 
 // Actualizar usuario
+// Actualizar usuario (dueño o admin; solo el admin puede cambiar roles)
 export async function updateUserHandler(req: Request, res: Response) {
   const id = Number(req.params.id);
-  const result = userSchema.partial().safeParse(req.body);
+  if (!isOwnerOrAdmin(req, id)) {
+    return res.status(403).json({ error: "No tenés permiso para editar este usuario" });
+  }
+
+  const result = userUpdateSchema.safeParse(req.body);
   if (!result.success) {
     return res.status(400).json({ errores: result.error.issues });
   }
 
   try {
-    let dataToUpdate = result.data;
+    const dataToUpdate = result.data;
+
+    if (!isAdmin(req)) {
+      delete dataToUpdate.role;
+    }
 
     if (dataToUpdate.password) {
       dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);

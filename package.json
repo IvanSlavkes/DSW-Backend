@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/index.ts",
-    "seed:localities": "tsx src/scripts/seed-localities.ts"
+    "seed:localities": "tsx src/scripts/seed-localities.ts",
+    "create:admin": "tsx src/scripts/create-admin.ts"
   },
   "repository": {
     "type": "git",

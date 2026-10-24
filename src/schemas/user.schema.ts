@@ -1,4 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
+
+const ROLES = ['user', 'moderator', 'admin'] as const;
 
 export const userSchema = z.object({
   name: z.string().min(1),
@@ -8,6 +10,13 @@ export const userSchema = z.object({
   description: z.string().optional(),
   position: z.string(),
   birthDate: z.string().transform((val) => new Date(val)),
-  localityId: z.string(),   
-  role: z.string().default("user")
+  localityId: z.string(),
+  role: z.enum(ROLES).default('user'),
 });
+
+// Para editar: todos los campos opcionales y SIN valor por defecto en role.
+// (En Zod 4, userSchema.partial() seguiría aplicando default("user") y le bajaría el rol a cualquiera.)
+export const userUpdateSchema = userSchema
+  .omit({ role: true })
+  .partial()
+  .extend({ role: z.enum(ROLES).optional() });
