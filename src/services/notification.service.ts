@@ -7,9 +7,9 @@ const notificationInclude = {
 };
 
 // Listar todas las notificaciones
-export async function getAllNotifications(userId: number) {
+export async function getAllNotifications(userId?: number) {
   return await prisma.notification.findMany({
-    where: { userId },
+    ...(userId !== undefined ? { where: { userId } } : {}),
     include: notificationInclude,
   });
 }

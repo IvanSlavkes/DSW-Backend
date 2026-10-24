@@ -6,19 +6,19 @@ import {
   updateNotification,
   deleteNotification,
 } from '../services/notification.service.js';
-
-type AuthRequest = Request & { user?: { id: number } };
-
-function getAuthUserId(req: Request) {
-  return Number((req as AuthRequest).user?.id);
-}
+import { getAuthUserId, isAdmin, isOwnerOrAdmin } from '../lib/permissions.js';
 
 const FORBIDDEN_MESSAGE = 'No tenés permiso sobre esta notificación';
 
 export async function listNotifications(req: Request, res: Response) {
   const userId = getAuthUserId(req);
   if (!userId) return res.status(401).json({ mensaje: 'No autorizado' });
-  const notifications = await getAllNotifications(userId);
+
+  // El admin puede pedir las de todos con ?all=true
+  const wantsAll = isAdmin(req) && req.query.all === 'true';
+  const notifications = await getAllNotifications(
+    wantsAll ? undefined : userId,
+  );
   res.json(notifications);
 }
 
@@ -27,8 +27,8 @@ export async function getNotificationHandler(req: Request, res: Response) {
   const notification = await getNotificationById(id);
   if (!notification)
     return res.status(404).json({ mensaje: 'Notificación no encontrada' });
-  if (notification.userId !== getAuthUserId(req))
-    return res.status(403).json({ mensaje: FORBIDDEN_MESSAGE });
+    if (!isOwnerOrAdmin(req, notification.userId))
+      return res.status(403).json({ mensaje: FORBIDDEN_MESSAGE });
   res.json(notification);
 }
 
@@ -54,8 +54,8 @@ export async function updateNotificationHandler(req: Request, res: Response) {
     const existing = await getNotificationById(id);
     if (!existing)
       return res.status(404).json({ mensaje: 'Notificación no encontrada' });
-    if (existing.userId !== getAuthUserId(req))
-      return res.status(403).json({ mensaje: FORBIDDEN_MESSAGE });
+          if (!isOwnerOrAdmin(req, existing.userId))
+            return res.status(403).json({ mensaje: FORBIDDEN_MESSAGE });
 
     const { read, message } = req.body;
     const updated = await updateNotification(id, { read, message });
@@ -72,8 +72,8 @@ export async function deleteNotificationHandler(req: Request, res: Response) {
     const existing = await getNotificationById(id);
     if (!existing)
       return res.status(404).json({ mensaje: 'Notificación no encontrada' });
-    if (existing.userId !== getAuthUserId(req))
-      return res.status(403).json({ mensaje: FORBIDDEN_MESSAGE });
+        if (!isOwnerOrAdmin(req, existing.userId))
+          return res.status(403).json({ mensaje: FORBIDDEN_MESSAGE });
 
     await deleteNotification(id);
     res.status(204).send();
