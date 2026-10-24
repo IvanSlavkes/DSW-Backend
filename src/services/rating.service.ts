@@ -1,9 +1,13 @@
 import { prisma } from "../lib/prisma.js";
+import { publicUserSelect } from '../lib/publicUser.js';
 
 // Listar todas las calificaciones
 export async function getAllRatings() {
   return await prisma.rating.findMany({
-    include: { match: true, rater: true, rated: true } // opcional: trae relaciones
+        include: {
+          match: true,
+          rater: { select: publicUserSelect },
+          rated: { select: publicUserSelect } } // opcional: trae relaciones
   });
 }
 
@@ -11,7 +15,11 @@ export async function getAllRatings() {
 export async function getRatingById(id: number) {
   return await prisma.rating.findUnique({
     where: { id },
-    include: { match: true, rater: true, rated: true }
+    include: {
+      match: true,
+      rater: { select: publicUserSelect },
+      rated: { select: publicUserSelect },
+    },
   });
 }
 

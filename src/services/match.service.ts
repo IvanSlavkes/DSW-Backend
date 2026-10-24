@@ -1,15 +1,15 @@
 import { prisma } from "../lib/prisma.js";
+import { publicUserSelect } from '../lib/publicUser.js';
 
 // Listar todos los partidos
 export async function getAllMatches() {
   return await prisma.match.findMany({
     include: {
       field: true,
-      creator: true,
+      creator: { select: publicUserSelect },
       ratings: true,
-      notifications: true,
       teams: { include: { positions: true } },
-    }
+    },
   });
 }
 
@@ -43,11 +43,10 @@ export async function getMatchById(id: number) {
     where: { id },
     include: {
       field: true,
-      creator: true,
+      creator: { select: publicUserSelect },
       ratings: true,
-      notifications: true,
       teams: { include: { positions: true } },
-    }
+    },
   });
 }
 

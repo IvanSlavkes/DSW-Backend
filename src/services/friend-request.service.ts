@@ -1,9 +1,13 @@
 import { prisma } from "../lib/prisma.js";
+import { publicUserSelect } from '../lib/publicUser.js';
 
 // Listar todas las solicitudes
 export async function getAllFriendRequests() {
   return await prisma.friendRequest.findMany({
-    include: { requester: true, receiver: true }
+    include: {
+      requester: { select: publicUserSelect },
+      receiver: { select: publicUserSelect },
+    },
   });
 }
 
@@ -11,7 +15,10 @@ export async function getAllFriendRequests() {
 export async function getFriendRequestById(id: number) {
   return await prisma.friendRequest.findUnique({
     where: { id },
-    include: { requester: true, receiver: true }
+    include: {
+      requester: { select: publicUserSelect },
+      receiver: { select: publicUserSelect },
+    },
   });
 }
 

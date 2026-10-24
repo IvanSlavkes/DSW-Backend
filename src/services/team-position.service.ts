@@ -1,9 +1,10 @@
 import { prisma } from '../lib/prisma.js';
+import { publicUserSelect } from '../lib/publicUser.js';
 
 // Listar todas las posiciones
 export async function getAllTeamPositions() {
   return await prisma.teamPosition.findMany({
-    include: { matchTeam: true, occupant: true },
+    include: { matchTeam: true, occupant: { select: publicUserSelect } },
   });
 }
 
@@ -11,7 +12,7 @@ export async function getAllTeamPositions() {
 export async function getTeamPositionById(id: number) {
   return await prisma.teamPosition.findUnique({
     where: { id },
-    include: { matchTeam: true, occupant: true },
+    include: { matchTeam: true, occupant: { select: publicUserSelect } },
   });
 }
 
