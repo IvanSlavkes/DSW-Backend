@@ -21,9 +21,10 @@ export async function getMatchesForUser(userId: number) {
         {
           teams: {
             some: {
-              positions: {
-                some: { OR: [{ occupantId: userId }, { requesterId: userId }] },
-              },
+              OR: [
+                { positions: { some: { occupantId: userId } } },
+                { requests: { some: { userId } } },
+              ],
             },
           },
         },

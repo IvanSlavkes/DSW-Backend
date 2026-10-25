@@ -16,7 +16,7 @@ export async function createUpcomingMatchReminders(now = new Date()) {
           lte: new Date(now.getTime() + 48 * 60 * 60 * 1000),
         },
       },
-      include: { teams: { include: { positions: true } } },
+      include: { teams: { include: { positions: true, requests: true } } },
     });
 
     for (const match of matches) {
@@ -34,8 +34,8 @@ export async function createUpcomingMatchReminders(now = new Date()) {
       for (const team of match.teams) {
         for (const position of team.positions) {
           if (position.occupantId) userIds.add(position.occupantId);
-          if (position.requesterId) userIds.add(position.requesterId);
         }
+        for (const request of team.requests) userIds.add(request.userId);
       }
 
       for (const userId of userIds) {
