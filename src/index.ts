@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 
 import fieldRoutes from "./routes/field.routes.js";
+import fieldCategoryRoutes from "./routes/field-category.routes.js";
 import matchRoutes from "./routes/match.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import matchTeamRoutes from "./routes/match-team.routes.js";
@@ -29,6 +30,7 @@ app.use("/localities", localityRoutes);
 
 // Rutas protegidas (CRUDs)
 app.use("/fields", verifyToken, fieldRoutes);
+app.use("/field-categories", verifyToken, fieldCategoryRoutes);
 app.use("/matches", verifyToken, matchRoutes);
 app.use("/users", verifyToken, userRoutes);
 app.use("/match-teams", verifyToken, matchTeamRoutes);

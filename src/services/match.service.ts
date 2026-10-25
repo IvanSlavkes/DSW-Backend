@@ -5,7 +5,7 @@ import { publicUserSelect } from '../lib/publicUser.js';
 export async function getAllMatches() {
   return await prisma.match.findMany({
     include: {
-      field: true,
+      field: { include: { category: true } },
       creator: { select: publicUserSelect },
       ratings: true,
       teams: { include: { positions: { include: { occupant: true } } } },
@@ -30,7 +30,7 @@ export async function getMatchesForUser(userId: number) {
       ],
     },
     include: {
-      field: true,
+      field: { include: { category: true } },
       teams: { include: { positions: { include: { occupant: true } } } },
     },
     orderBy: { date: "asc" },
@@ -42,7 +42,7 @@ export async function getMatchById(id: number) {
   return await prisma.match.findUnique({
     where: { id },
     include: {
-      field: true,
+      field: { include: { category: true } },
       creator: { select: publicUserSelect },
       ratings: true,
       teams: { include: { positions: { include: { occupant: true } } } },
@@ -73,13 +73,16 @@ interface CreateMatchData {
 }
 
 export async function createMatch(data: CreateMatchData) {
-  const field = await prisma.field.findUnique({ where: { id: data.fieldId } });
+  const field = await prisma.field.findUnique({
+    where: { id: data.fieldId },
+    include: { category: true },
+  });
   if (!field) throw new MatchCreationError(404, "Field not found");
-  if (!["5", "7", "11"].includes(field.type)) {
+  if (![5, 7, 11].includes(field.category.playersPerTeam)) {
     throw new MatchCreationError(400, "Field format must be 5, 7, or 11");
   }
 
-  const positionsPerTeam = Number(field.type);
+  const positionsPerTeam = field.category.playersPerTeam;
   const createTeam = (name: string, color: string, isCreatorTeam: boolean) => ({
     name,
     color,

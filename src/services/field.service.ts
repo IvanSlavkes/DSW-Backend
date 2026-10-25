@@ -1,17 +1,20 @@
 import { prisma } from '../lib/prisma.js';
 
 export async function getAllFields() {
-  return await prisma.field.findMany({ include: {locality: true}});
+  return await prisma.field.findMany({ include: { locality: true, category: true } });
 }
 
 export async function getFieldById(id: number) {
-  return await prisma.field.findUnique({ where: { id }, include: {locality: true} });
+  return await prisma.field.findUnique({
+    where: { id },
+    include: { locality: true, category: true },
+  });
 }
 
 export async function createField(data: {
   name: string;
   address: string;
-  type: string;
+  categoryId: number;
   price?: number;
   localityId: string;
 }) {
@@ -23,7 +26,7 @@ export async function updateField(
   data: Partial<{
     name: string;
     address: string;
-    type: string;
+    categoryId: number;
     price: number;
     localityId: string;
   }>,
