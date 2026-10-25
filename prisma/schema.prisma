@@ -21,8 +21,6 @@ model User {
   password      String
   description   String?
   position      String
-  averageRating Float    @default(0)
-  matchesPlayed Int      @default(0)
   birthDate     DateTime
   role          String   @default("user") // user | moderator | admin
 
@@ -46,8 +44,7 @@ model Match {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
-  date        DateTime
-  time        String
+  startsAt    DateTime @db.Timestamptz(3)
   duration    Int      @default(60)
   privacy     String
   status      String   @default("open")
@@ -173,7 +170,7 @@ model PositionRequest {
 
 model Locality {
   id     String  @id
-  nombre String
+  name   String
   users  User[]
   fields Field[]
 }

@@ -34,7 +34,7 @@ export async function getMatchesForUser(userId: number) {
       field: { include: { category: true } },
       teams: { include: { positions: { include: { occupant: true } } } },
     },
-    orderBy: { date: "asc" },
+    orderBy: { startsAt: "asc" },
   });
 }
 
@@ -62,8 +62,7 @@ export class MatchCreationError extends Error {
 interface CreateMatchData {
   name: string;
   description?: string | undefined;
-  date: Date;
-  time: string;
+  startsAt: Date;
   duration?: number | undefined;
   privacy: "public" | "private";
   fieldId: number;
@@ -106,8 +105,7 @@ export async function createMatch(data: CreateMatchData) {
     data: {
       name: data.name,
       ...(data.description !== undefined ? { description: data.description } : {}),
-      date: data.date,
-      time: data.time,
+      startsAt: data.startsAt,
       ...(data.duration !== undefined ? { duration: data.duration } : {}),
       privacy: data.privacy,
       status: "open",
@@ -128,8 +126,7 @@ export async function createMatch(data: CreateMatchData) {
 export async function updateMatch(id: number, data: Partial<{ 
   name: string; 
   description: string | null;
-  date: Date; 
-  time: string; 
+  startsAt: Date;
   duration: number;
   privacy: string; 
   status: string; 

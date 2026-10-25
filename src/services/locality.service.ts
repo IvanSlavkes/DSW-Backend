@@ -1,18 +1,18 @@
 import { prisma } from "../lib/prisma.js";
 
 export async function getAllLocalities() {
-  return await prisma.locality.findMany({ orderBy: { nombre: "asc" } });
+  return await prisma.locality.findMany({ orderBy: { name: "asc" } });
 }
 
 export async function getLocalityById(id: string) {
   return await prisma.locality.findUnique({ where: { id } });
 }
 
-export async function createLocality(data: { id: string; nombre: string }) {
+export async function createLocality(data: { id: string; name: string }) {
   return await prisma.locality.create({ data });
 }
 
-export async function updateLocality(id: string, data: { nombre?: string }) {
+export async function updateLocality(id: string, data: { name?: string }) {
   return await prisma.locality.update({ where: { id }, data });
 }
 

@@ -37,22 +37,22 @@ export async function getLocalityHandler(req: Request, res: Response) {
 
 // Crear localidad usando la API
 export async function createLocalityHandler(req: Request, res: Response) {
-  const { nombre } = req.body;
+  const { name } = req.body;
 
   try {
     // Consultar API GeoRef con el nombre
-    const response = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${nombre}`);
+    const response = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(name)}`);
     const data = await response.json() as GeoRefResponse;
 
     if (!data.localidades || data.localidades.length === 0) {
       return res.status(404).json({ mensaje: "Localidad no encontrada en la API" });
     }
 
-    const localidadApi = data.localidades[0]!; // primera coincidencia
+    const georefLocality = data.localidades[0]!; // primera coincidencia
 
     const nuevaLocalidad = await createLocality({
-      id: localidadApi.id,
-      nombre: localidadApi.nombre
+      id: georefLocality.id,
+      name: georefLocality.nombre
     });
 
     res.status(201).json(nuevaLocalidad);
@@ -62,12 +62,12 @@ export async function createLocalityHandler(req: Request, res: Response) {
   }
 }
 
-// Actualizar localidad (solo nombre, el id no cambia)
+// Actualizar localidad name (el id no cambia)
 export async function updateLocalityHandler(req: Request, res: Response) {
   const id = req.params.id as string;   
-  const { nombre } = req.body;
+  const { name } = req.body;
   try {
-    const localityUpdated = await updateLocality(id, { nombre });
+    const localityUpdated = await updateLocality(id, { name });
     res.json(localityUpdated);
   } catch (error) {
     res.status(404).json({ mensaje: "Localidad no encontrada" });

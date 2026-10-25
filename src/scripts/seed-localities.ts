@@ -46,7 +46,7 @@ async function main() {
   );
 
   const result = await prisma.locality.createMany({
-    data: rosario.map((l) => ({ id: l.id, nombre: l.nombre })),
+    data: rosario.map((l) => ({ id: l.id, name: l.nombre })),
     skipDuplicates: true,
   });
 

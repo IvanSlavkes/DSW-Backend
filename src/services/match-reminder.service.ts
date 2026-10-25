@@ -1,6 +1,5 @@
 import { prisma } from "../lib/prisma.js";
 
-const ARGENTINA_OFFSET = "-03:00";
 const REMINDER_TYPE = "match_reminder";
 let checkInProgress = false;
 
@@ -11,7 +10,7 @@ export async function createUpcomingMatchReminders(now = new Date()) {
   try {
     const matches = await prisma.match.findMany({
       where: {
-        date: {
+        startsAt: {
           gte: new Date(now.getTime() - 36 * 60 * 60 * 1000),
           lte: new Date(now.getTime() + 48 * 60 * 60 * 1000),
         },
@@ -20,9 +19,7 @@ export async function createUpcomingMatchReminders(now = new Date()) {
     });
 
     for (const match of matches) {
-      const date = match.date.toISOString().slice(0, 10);
-      const time = match.time.slice(0, 5);
-      const startsAt = new Date(`${date}T${time}:00${ARGENTINA_OFFSET}`);
+      const startsAt = match.startsAt;
       const reminderDueAt = startsAt.getTime() - 24 * 60 * 60 * 1000;
       if (
         !Number.isFinite(startsAt.getTime()) ||
@@ -50,7 +47,7 @@ export async function createUpcomingMatchReminders(now = new Date()) {
             userId,
             matchId: match.id,
             type: REMINDER_TYPE,
-            message: `Recordatorio: mañana es ${match.name}, a las ${match.time}.`,
+            message: `Recordatorio: mañana es ${match.name}, a las ${new Intl.DateTimeFormat("es-AR", { timeZone: "America/Argentina/Buenos_Aires", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(startsAt)}.`,
           },
         });
       }

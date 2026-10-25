@@ -3,8 +3,7 @@ import { z } from "zod";
 export const createMatchSchema = z.object({
   name: z.string().trim().min(1),
   description: z.string().optional(),
-  date: z.coerce.date(),
-  time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  startsAt: z.iso.datetime({ offset: true }).transform((value) => new Date(value)),
   duration: z.number().int().positive().optional(),
   privacy: z.enum(["public", "private"]),
   fieldId: z.number().int().positive(),

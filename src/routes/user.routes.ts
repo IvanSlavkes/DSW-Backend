@@ -10,6 +10,7 @@ import { prisma } from '../lib/prisma.js';
 import authMiddleware from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../lib/permissions.js';
 import bcrypt from 'bcrypt';
+import { withUserStats } from '../lib/user-stats.js';
 
 interface AuthenticatedRequest extends Request {
   user?: { id: number; role?: string; [key: string]: any };
@@ -31,10 +32,11 @@ const profileSelect = {
   description: true,
   position: true,
   birthDate: true,
+  ratingsGiven: { select: { matchId: true } },
+  ratingsReceived: { select: { matchId: true, stars: true } },
 };
 
-// Campos que el usuario puede editar de SU propio perfil.
-// Quedan afuera a propósito: role, averageRating, matchesPlayed, id.
+// Campos editables del perfil; las estadísticas se derivan de las calificaciones.
 const EDITABLE_PROFILE_FIELDS = [
   'name',
   'lastName',
@@ -58,7 +60,7 @@ router.get('/me', async (req: Request, res: Response) => {
     });
 
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    return res.json(user);
+    return res.json(withUserStats(user));
   } catch (err) {
     console.error('Error en /users/me:', err);
     return res.status(500).json({ error: 'Error al obtener usuario' });
@@ -97,7 +99,7 @@ router.put('/me', async (req: Request, res: Response) => {
       select: profileSelect,
     });
 
-    return res.json(user);
+    return res.json(withUserStats(user));
   } catch (err) {
     console.error('Error en PUT /users/me:', err);
     return res.status(500).json({ error: 'Error al actualizar usuario' });
