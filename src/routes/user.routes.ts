@@ -29,6 +29,7 @@ const profileSelect = {
   email: true,
   role: true,
   localityId: true,
+  locality: { select: { id: true, name: true } },
   description: true,
   position: true,
   birthDate: true,

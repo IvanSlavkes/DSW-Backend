@@ -1,4 +1,6 @@
 import { Router } from "express";
+import verifyToken from "../middleware/auth.middleware.js";
+import { requireAdmin } from "../lib/permissions.js";
 import { 
   listLocalities, 
   getLocalityHandler, 
@@ -11,8 +13,8 @@ const router = Router();
 
 router.get("/", listLocalities);
 router.get("/:id", getLocalityHandler);
-router.post("/", createLocalityHandler);
-router.put("/:id", updateLocalityHandler);
-router.delete("/:id", deleteLocalityHandler);
+router.post("/", verifyToken, requireAdmin, createLocalityHandler);
+router.put("/:id", verifyToken, requireAdmin, updateLocalityHandler);
+router.delete("/:id", verifyToken, requireAdmin, deleteLocalityHandler);
 
 export default router;
