@@ -2,8 +2,9 @@ import { prisma } from "../lib/prisma.js";
 import { publicUserSelect } from '../lib/publicUser.js';
 
 // Listar todas las solicitudes
-export async function getAllFriendRequests() {
+export async function getAllFriendRequests(userId?: number) {
   return await prisma.friendRequest.findMany({
+    ...(userId !== undefined ? { where: { OR: [{ requesterId: userId }, { receiverId: userId }] } } : {}),
     include: {
       requester: { select: publicUserSelect },
       receiver: { select: publicUserSelect },
@@ -23,7 +24,7 @@ export async function getFriendRequestById(id: number) {
 }
 
 // Crear solicitud
-export async function createFriendRequest(data: { requesterId: number; receiverId: number; status: string }) {
+export async function createFriendRequest(data: { requesterId: number; receiverId: number; status: "pending" }) {
   return await prisma.friendRequest.create({ data });
 }
 

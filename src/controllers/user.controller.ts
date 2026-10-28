@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../lib/jwt-secret.js";
 import { userSchema, userUpdateSchema } from '../schemas/user.schema.js';
 import { isAdmin, isOwnerOrAdmin } from '../lib/permissions.js';
 import {
@@ -12,8 +13,6 @@ import {
   deleteUser,
 } from "../services/user.service.js";
 import { prisma } from "../lib/prisma.js";
-
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 // Listar usuarios
 export async function listUsers(req: Request, res: Response) {

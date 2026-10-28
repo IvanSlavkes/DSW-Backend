@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAdmin } from "../lib/permissions.js";
 import { 
   listNotifications,
   getNotificationHandler,
@@ -11,7 +12,7 @@ const router = Router();
 
 router.get("/", listNotifications);
 router.get("/:id", getNotificationHandler);
-router.post("/", createNotificationHandler);
+router.post("/", requireAdmin, createNotificationHandler);
 router.put("/:id", updateNotificationHandler);
 router.delete("/:id", deleteNotificationHandler);
 

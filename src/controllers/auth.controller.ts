@@ -3,9 +3,8 @@ import { ZodError } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../lib/jwt-secret.js';
 import { registerSchema, loginSchema } from '../schemas/auth.schema.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 
 // Convierte un error en un mensaje claro para el usuario.
 // Nunca devuelve el texto interno de Prisma (trae rutas y detalles de la consulta).
@@ -59,6 +58,11 @@ export const login = async (req: Request, res: Response) => {
 
     res.json({ mensaje: 'Login exitoso', token });
   } catch (error) {
+    if ((error as { code?: string })?.code === 'P1017') {
+      return res.status(503).json({
+        error: 'La base de datos no está disponible. Intentá de nuevo más tarde.',
+      });
+    }
     res
       .status(400)
       .json({ error: readableError(error, 'No se pudo iniciar sesión') });

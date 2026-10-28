@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAdmin } from "../lib/permissions.js";
 import { listMatchTeams, 
   getMatchTeamHandler, 
   createMatchTeamHandler, 
@@ -10,8 +11,8 @@ const router = Router();
 
 router.get("/", listMatchTeams);
 router.get("/:id", getMatchTeamHandler);
-router.post("/", createMatchTeamHandler);
-router.put("/:id", updateMatchTeamHandler);
-router.delete("/:id", deleteMatchTeamHandler);
+router.post("/", requireAdmin, createMatchTeamHandler);
+router.put("/:id", requireAdmin, updateMatchTeamHandler);
+router.delete("/:id", requireAdmin, deleteMatchTeamHandler);
 
 export default router;
