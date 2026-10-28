@@ -1,10 +1,24 @@
-import type { Request, Response } from "express";
-import { prisma } from "../lib/prisma.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { registerSchema, loginSchema } from "../schemas/auth.schema.js";
+import type { Request, Response } from 'express';
+import { ZodError } from 'zod';
+import { prisma } from '../lib/prisma.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { registerSchema, loginSchema } from '../schemas/auth.schema.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
+
+// Convierte un error en un mensaje claro para el usuario.
+// Nunca devuelve el texto interno de Prisma (trae rutas y detalles de la consulta).
+function readableError(error: unknown, fallback: string) {
+  if (error instanceof ZodError) {
+    return error.issues.map((issue) => issue.message).join('. ');
+  }
+  if ((error as { code?: string })?.code === 'P2002') {
+    return 'Ese email ya está registrado';
+  }
+  console.error(error);
+  return fallback;
+}
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -15,10 +29,14 @@ export const register = async (req: Request, res: Response) => {
       data: { ...parsed, password: hashedPassword },
     });
 
-        const { password: _password, ...safeUser } = user;
-    res.status(201).json({ mensaje: "Usuario registrado exitosamente", user: safeUser });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    const { password: _password, ...safeUser } = user;
+    res
+      .status(201)
+      .json({ mensaje: 'Usuario registrado exitosamente', user: safeUser });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: readableError(error, 'No se pudo registrar el usuario') });
   }
 };
 
@@ -26,16 +44,23 @@ export const login = async (req: Request, res: Response) => {
   try {
     const parsed = loginSchema.parse(req.body);
 
-    const user = await prisma.user.findUnique({ where: { email: parsed.email } });
-    if (!user) return res.status(400).json({ error: "Credenciales inválidas" });
+    const user = await prisma.user.findUnique({
+      where: { email: parsed.email },
+    });
+    if (!user) return res.status(400).json({ error: 'Credenciales inválidas' });
 
     const validPassword = await bcrypt.compare(parsed.password, user.password);
-    if (!validPassword) return res.status(400).json({ error: "Credenciales inválidas" });
+    if (!validPassword)
+      return res.status(400).json({ error: 'Credenciales inválidas' });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
-    res.json({ mensaje: "Login exitoso", token });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    res.json({ mensaje: 'Login exitoso', token });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: readableError(error, 'No se pudo iniciar sesión') });
   }
 };
