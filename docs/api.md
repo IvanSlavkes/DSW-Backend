@@ -45,6 +45,15 @@ Entrada: `{ "email": "...", "password": "..." }`. Devuelve `200` con `{ mensaje,
 
 El listado y el detalle cargan relaciones de cancha, creador, ratings, notificaciones, equipos y lugares. El detalle inexistente devuelve `404`.
 
+### Inscripción y solicitudes de lugar
+
+- `POST /matches/:id/join` acepta `{ "teamId": 1, "positionType": "centrocampista", "secondaryPositionType": "delantero" }`. Las posiciones pueden ser `null`. En partidos públicos ocupa un lugar libre inmediatamente; en partidos privados crea una solicitud `pending` que no reserva cupo. Requiere autenticación.
+- `GET /matches/:id/my-participation` devuelve si el usuario es creador, su lugar ocupado y su solicitud más reciente en ese partido.
+- `GET /matches/:id/position-requests` lista solicitudes pendientes y solo la puede consultar el creador.
+- `PATCH /matches/:id/position-requests/:requestId` acepta `{ "decision": "accepted" }` o `{ "decision": "rejected" }` y solo lo puede ejecutar el creador. Aceptar asigna un lugar libre; si el equipo ya está completo devuelve `409` y deja la solicitud pendiente.
+
+La API devuelve `409` si el partido ya empezó, está lleno, el usuario ya está inscripto o existe una solicitud pendiente incompatible. Al ocupar el último cupo, el partido cambia a `full`.
+
 ### `POST /matches`
 
 La identidad del creador sale del JWT, no del body. Campos aceptados:
@@ -93,7 +102,7 @@ La actualización admite parcialmente nombre, descripción, fecha, hora, duraci�
 
 `POST /match-teams` acepta `{ name, color, matchId }`; `PUT` permite `name` y `color`.
 
-`POST /team-positions` acepta `matchTeamId` y los campos opcionales `positionType`, `secondaryPositionType`, `guestName`, `occupantId` y `role`. `PUT` actualiza datos del lugar. Este CRUD todavía no valida los enums ni aplica reglas de unión.
+`POST /team-positions` acepta `matchTeamId` y los campos opcionales `positionType`, `secondaryPositionType`, `guestName`, `occupantId` y `role`. `PUT` actualiza datos del lugar. Estos cambios requieren rol de administrador; las inscripciones de jugadores deben usar `POST /matches/:id/join`.
 
 ## Otros recursos
 
@@ -104,4 +113,4 @@ La actualización admite parcialmente nombre, descripción, fecha, hora, duraci�
 
 ## Convenciones pendientes
 
-Los recursos heredados no comparten todavía validación Zod ni una forma uniforme de error; pueden responder con `error`, `message`, `mensaje` o `errores`. `PositionRequest` existe en el modelo, pero no tiene endpoints. La documentación es una referencia del código actual y debe evolucionar con los contratos.
+Los recursos heredados no comparten todavía validación Zod ni una forma uniforme de error; pueden responder con `error`, `message`, `mensaje` o `errores`. La documentación es una referencia del código actual y debe evolucionar con los contratos.
