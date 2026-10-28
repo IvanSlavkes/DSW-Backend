@@ -17,13 +17,13 @@ Copy-Item .env.example .env
 
 Completar `.env` con la conexión PostgreSQL y un secreto JWT privado. No subir `.env` ni credenciales al repositorio.
 
-- `DATABASE_URL`: conexión que usa la configuración de Prisma CLI.
-- `DIRECT_URL`: conexión que usa Prisma Client en ejecución (`src/lib/prisma.ts`).
-- `JWT_SECRET`: secreto con el que se firman y validan tokens. El código conserva actualmente un valor de fallback para desarrollo; configurar uno propio evita usarlo.
+- `DATABASE_URL`: conexión PostgreSQL pooled para Prisma Client en ejecución. En Neon, usar la cadena pooled (host con `-pooler`).
+- `DIRECT_URL`: conexión directa que usa Prisma CLI (`prisma.config.ts`) para ejecutar migraciones. En Neon, usar la cadena directa.
+- `JWT_SECRET`: secreto privado con el que se firman y validan tokens. En producción es obligatorio y el backend se niega a iniciar si falta o conserva el valor de desarrollo.
 - `PORT`: opcional; el servidor usa `3000` si no se especifica.
 - `EMAIL_USER` y `EMAIL_PASS`: opcionales para el envío de correo desde el servicio de notificaciones.
 
-En proveedores que entregan una URL pooled y otra directa, asignar cada URL según la configuración del proveedor. Si no hay diferencia, ambas pueden apuntar a la misma base PostgreSQL.
+Para desarrollo local, `DATABASE_URL` puede omitirse: el cliente usa `DIRECT_URL` como fallback. En Neon, configurar ambas URLs para que la aplicación use el pool y las migraciones usen la conexión directa.
 
 ## Prisma y base de datos
 
@@ -56,4 +56,4 @@ El servidor usa `http://localhost:3000` por defecto. `npm run seed:localities` e
 
 ## Conectar el frontend
 
-El cliente Axios del frontend está configurado actualmente en `src/api/client.ts` con `http://localhost:3000`. Aunque el repositorio frontend tiene una variable `VITE_API_URL`, el cliente aún no la consume. Para desarrollo local, iniciar el backend en el puerto predeterminado.
+El cliente Axios del frontend usa `VITE_API_URL` desde `src/api/client.ts`, con `http://localhost:3000` como valor predeterminado. Para desarrollo local, iniciar el backend en el puerto predeterminado.
