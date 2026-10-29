@@ -1,22 +1,31 @@
 # FUTGO — Backend
 
-API REST del trabajo práctico para encontrar compañeros o rivales para partidos de fútbol. El backend está implementado con Node.js, TypeScript, Express, Prisma y PostgreSQL.
+API REST de FUTGO, una aplicación web para encontrar y organizar partidos de fútbol. El backend está desarrollado con Node.js, TypeScript, Express, Prisma y PostgreSQL.
 
-## Inicio rápido
+## Requisitos
 
-1. Instalar una versión de Node.js compatible con las dependencias del proyecto.
-2. Instalar dependencias con `npm install`.
-3. Copiar `.env.example` a `.env` y completar las URLs de una base PostgreSQL persistente.
-4. Ejecutar `npx prisma generate` y `npx prisma migrate deploy`.
-5. Iniciar el servidor con `npm run dev`.
+- Node.js y npm; se recomienda Node.js 20.19 o superior, o 22.12 o superior.
+- Una base PostgreSQL persistente y accesible por red. El entorno compartido usa Neon; no requiere iniciar una base local.
 
-La API escucha en el puerto `3000` por defecto. La guía completa está en [`docs/README.md`](docs/README.md).
+## Instalación y ejecución rápida
 
-## Repositorios
+```powershell
+npm install
+Copy-Item .env.example .env
+```
+
+Completar `.env` con las conexiones PostgreSQL y un secreto JWT privado. Después:
+
+```powershell
+npx prisma generate
+npx prisma migrate deploy
+npm run dev
+```
+
+La API queda disponible en `http://localhost:3000`. La guía completa, incluidas las variables de entorno, está en [`docs/setup.md`](docs/setup.md).
+
+## Repositorios y documentación
 
 - [Frontend](https://github.com/IvanSlavkes/DSW-Frontend)
-- [Backend](https://github.com/IvanSlavkes/DSW-Backend)
-
-## Estado de la documentación
-
-La propuesta funcional disponible está desactualizada. La documentación técnica describe lo que se observa actualmente en el código y mantiene por separado las decisiones de producto ya acordadas y las funcionalidades pendientes.
+- [Documentación general y alcance de Regularidad](https://github.com/IvanSlavkes/DSW-Frontend/blob/main/docs/README.md)
+- [Índice de documentación del backend](docs/README.md)

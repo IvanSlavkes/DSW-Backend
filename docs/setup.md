@@ -1,12 +1,11 @@
-# Instalación y ejecución del backend
+# Instalación, configuración y ejecución del backend
 
 ## Requisitos
 
-- Node.js y npm compatibles con las dependencias indicadas en `package.json`.
-- Una instancia PostgreSQL persistente y accesible por red. Las pautas del TP no admiten una base embebida ni requieren que la base se ejecute localmente.
-- Acceso a los repositorios frontend y backend.
+- Node.js y npm compatibles con el proyecto (recomendado: Node.js 20.19 o superior, o 22.12 o superior).
+- PostgreSQL persistente accesible por red. El proyecto usa Neon en el entorno compartido; no requiere ejecutar PostgreSQL localmente.
 
-## Configuración
+## Instalar dependencias y configurar variables
 
 Desde la raíz de `DSW-Backend`:
 
@@ -15,45 +14,46 @@ npm install
 Copy-Item .env.example .env
 ```
 
-Completar `.env` con la conexión PostgreSQL y un secreto JWT privado. No subir `.env` ni credenciales al repositorio.
+Editar `.env` con los valores privados del entorno. No subir `.env`, contraseñas ni cadenas de conexión al repositorio. Para que otros integrantes usen la misma base Neon, compartir los valores de forma privada; cada integrante crea su propio archivo `.env` local.
 
-- `DATABASE_URL`: conexión PostgreSQL pooled para Prisma Client en ejecución. En Neon, usar la cadena pooled (host con `-pooler`).
-- `DIRECT_URL`: conexión directa que usa Prisma CLI (`prisma.config.ts`) para ejecutar migraciones. En Neon, usar la cadena directa.
-- `JWT_SECRET`: secreto privado con el que se firman y validan tokens. En producción es obligatorio y el backend se niega a iniciar si falta o conserva el valor de desarrollo.
-- `PORT`: opcional; el servidor usa `3000` si no se especifica.
-- `EMAIL_USER` y `EMAIL_PASS`: opcionales para el envío de correo desde el servicio de notificaciones.
+| Variable | Uso |
+| --- | --- |
+| `DATABASE_URL` | Conexión que usa Prisma Client durante las peticiones. En Neon, usar la URL pooled (host con `-pooler`). |
+| `DIRECT_URL` | Conexión directa usada por Prisma CLI y migraciones. En Neon, usar la URL sin `-pooler`. |
+| `JWT_SECRET` | Secreto privado que firma los tokens de sesión. Configurar un valor propio y seguro. |
+| `PORT` | Puerto HTTP opcional; por defecto `3000`. |
+| `EMAIL_USER`, `EMAIL_PASS` | Credenciales opcionales para el envío de correo. |
 
-Para desarrollo local, `DATABASE_URL` puede omitirse: el cliente usa `DIRECT_URL` como fallback. En Neon, configurar ambas URLs para que la aplicación use el pool y las migraciones usen la conexión directa.
+La configuración del cliente usa `DATABASE_URL` y admite `DIRECT_URL` como fallback. Para Neon se recomienda definir ambas.
 
-## Prisma y base de datos
+## Generar Prisma y aplicar migraciones
+
+Verificar que `.env` apunta al entorno correcto antes de ejecutar comandos de base de datos:
 
 ```powershell
 npx prisma generate
 npx prisma migrate deploy
-```
-
-`migrate deploy` aplica las migraciones pendientes a la base indicada por la configuración. Verificar las URLs antes de ejecutarlo en cada entorno. Para revisar el estado:
-
-```powershell
 npx prisma migrate status
 ```
 
-## Ejecutar
+`migrate deploy` aplica a la base configurada las migraciones pendientes del directorio `prisma/migrations`.
+
+## Iniciar la API
 
 ```powershell
 npm run dev
 ```
 
-El servidor usa `http://localhost:3000` por defecto. `npm run seed:localities` ejecuta el script de carga de localidades cuando sea necesario.
+El servidor escucha en `http://localhost:3000` por defecto. `GET /` devuelve un mensaje de comprobación. Al arrancar, también revisa los recordatorios de partidos próximos y luego repite esa revisión cada 15 minutos.
 
 ## Scripts disponibles
 
 | Comando | Uso |
 | --- | --- |
-| `npm run dev` | Ejecuta Express con recarga mediante `tsx watch`. |
-| `npm run seed:localities` | Carga localidades desde el servicio GeoRef. |
-| `npm test` | Actualmente es un placeholder que termina con error; todavía no hay suite automatizada configurada. |
+| `npm run dev` | Inicia Express con recarga de desarrollo mediante `tsx watch`. |
+| `npm run seed:localities` | Importa localidades del departamento Rosario desde GeoRef; omite las ya cargadas. |
+| `npm run create:admin -- <correo> <contraseña>` | Crea una cuenta administradora o da rol admin a una cuenta existente. |
 
-## Conectar el frontend
+## Integración con el frontend
 
-El cliente Axios del frontend usa `VITE_API_URL` desde `src/api/client.ts`, con `http://localhost:3000` como valor predeterminado. Para desarrollo local, iniciar el backend en el puerto predeterminado.
+El frontend se comunica con la API en `http://localhost:3000` por defecto. Cuando `VITE_API_URL` está vacío, el servidor Vite en `DSW-Frontend` reenvía las rutas de API al backend local. Para la presentación móvil se puede iniciar todo desde frontend con `npm run presentacion`; ver la [guía del frontend](https://github.com/IvanSlavkes/DSW-Frontend/blob/main/docs/setup.md).

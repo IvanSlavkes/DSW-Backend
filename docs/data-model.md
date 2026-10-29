@@ -1,36 +1,55 @@
 # Modelo de datos
 
-El esquema vigente está definido en [`prisma/schema.prisma`](../prisma/schema.prisma) y se persiste en PostgreSQL mediante Prisma.
+El esquema vigente está definido en [prisma/schema.prisma](../prisma/schema.prisma) y se persiste en PostgreSQL mediante Prisma.
 
 ## Entidades principales
 
-| Entidad | Responsabilidad y relaciones principales |
+| Entidad | Responsabilidad y relaciones |
 | --- | --- |
-| `User` | Perfil y cuenta. Puede crear partidos, ocupar lugares, recibir notificaciones y ratings, y enviar solicitudes. El rol se guarda como texto (`user`, `moderator`, `admin`). |
-| `Field` | Cancha, dirección, formato (`5`, `7` o `11`), precio total y localidad. |
-| `Match` | Partido con creador, cancha, fecha, hora, duración, privacidad y estado. |
-| `MatchTeam` | Equipo asociado a un partido. La creación actual genera dos equipos. |
-| `TeamPosition` | Lugar de un equipo. `positionType` y `secondaryPositionType` son opcionales; los valores de posición usados por el formulario son `arquero`, `defensor`, `centrocampista` y `delantero`. `status` contempla `free` y `occupied`; `role`, `player` y `captain`. |
-| `PositionRequest` | Solicitud de un usuario para un equipo, con estado `pending`, `accepted` o `rejected`. La tabla ya existe, pero el flujo HTTP de solicitudes todavía no está implementado. |
-| `Locality` | Localidad relacionada con usuarios y canchas. |
-| `FriendRequest`, `Notification`, `Rating` | Solicitudes de amistad, notificaciones y calificaciones asociadas a usuarios/partidos. |
+| User | Cuenta y perfil. Puede crear partidos, ocupar posiciones, generar solicitudes de participación, recibir notificaciones y participar en calificaciones. Roles observados: user, moderator, admin y disabled. |
+| Locality | Catálogo de localidades relacionado con usuarios y canchas. |
+| FieldCategory | Categoría de cancha con superficie y cantidad de jugadores por equipo. |
+| Field | Cancha con dirección, precio, localidad y categoría. |
+| Match | Partido asociado a una cancha y a su creador; guarda fecha y hora de inicio, duración, privacidad y estado. |
+| MatchTeam | Equipo perteneciente a un partido. La creación de un partido crea dos equipos. |
+| TeamPosition | Lugar dentro de un equipo; puede estar libre u ocupado, tener ocupante, posición y rol de jugador o capitán. |
+| PositionRequest | Solicitud de un usuario para entrar en un equipo, con estado pending, accepted o rejected. El flujo está implementado. |
+| FriendRequest | Solicitud de amistad entre usuarios. |
+| Notification | Notificación de un usuario, opcionalmente vinculada a un partido. |
+| Rating | Calificación de un usuario a otro asociada a un partido; una combinación de partido, autor y usuario calificado es única. |
 
-## Capacidad por formato
+## Relaciones principales
 
-Al crear un partido se usa el formato de la cancha para generar `N` lugares por equipo:
+~~~mermaid
+erDiagram
+    LOCALITY ||--o{ USER : resides
+    LOCALITY ||--o{ FIELD : contains
+    FIELD_CATEGORY ||--o{ FIELD : classifies
+    FIELD ||--o{ MATCH : hosts
+    USER ||--o{ MATCH : creates
+    MATCH ||--|{ MATCH_TEAM : has
+    MATCH_TEAM ||--|{ TEAM_POSITION : contains
+    USER o|--o{ TEAM_POSITION : occupies
+    USER ||--o{ POSITION_REQUEST : sends
+    MATCH_TEAM ||--o{ POSITION_REQUEST : receives
+    USER ||--o{ NOTIFICATION : receives
+    MATCH o|--o{ NOTIFICATION : references
+    MATCH ||--o{ RATING : has
+    USER ||--o{ RATING : rates
+~~~
 
-| Formato | Lugares por equipo | Lugares totales |
+## Capacidad por categoría de cancha
+
+La cantidad de lugares por equipo proviene de FieldCategory.playersPerTeam:
+
+| Categoría | Lugares por equipo | Lugares totales |
 | --- | ---: | ---: |
 | Fútbol 5 | 5 | 10 |
 | Fútbol 7 | 7 | 14 |
 | Fútbol 11 | 11 | 22 |
 
-El primer lugar del Equipo A queda ocupado por el creador y con rol `captain`. Los demás lugares se crean libres y sin posiciones asignadas.
+Al crear un partido se generan ambos equipos y sus lugares. El primer puesto del Equipo A queda ocupado por el creador y tiene rol de capitán; el resto comienza libre.
 
-## Decisiones funcionales registradas
+## Participación
 
-- Los partidos privados se muestran en el listado y requieren aprobación del creador para incorporar a un jugador.
-- El usuario elegirá a cuál de los dos equipos solicitar unirse.
-- Cada usuario ocupará como máximo un lugar por partido y no podrá cambiar de equipo por ahora.
-- La identidad del creador es `Match.creatorId`; el rol de capitán de `TeamPosition` no reemplaza la propiedad del partido.
-- Se prevé mostrar el detalle en un modal con ambos equipos en columnas, integrantes, posiciones y lugares libres. Esa interfaz todavía está pendiente.
+En partidos públicos, un jugador ocupa un lugar libre inmediatamente. En partidos privados se registra una solicitud que el creador acepta o rechaza. La propiedad del partido se determina por Match.creatorId; el capitán es un atributo del lugar ocupado y no reemplaza al creador.
