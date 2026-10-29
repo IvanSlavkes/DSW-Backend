@@ -13,7 +13,7 @@ function readableError(error: unknown, fallback: string) {
     return error.issues.map((issue) => issue.message).join('. ');
   }
   if ((error as { code?: string })?.code === 'P2002') {
-    return 'Ese email ya está registrado';
+    return 'Ese correo ya está registrado. Probá iniciar sesión o usá otro correo.';
   }
   console.error(error);
   return fallback;
@@ -33,8 +33,9 @@ export const register = async (req: Request, res: Response) => {
       .status(201)
       .json({ mensaje: 'Usuario registrado exitosamente', user: safeUser });
   } catch (error) {
+    const isDuplicateEmail = (error as { code?: string })?.code === 'P2002';
     res
-      .status(400)
+      .status(isDuplicateEmail ? 409 : 400)
       .json({ error: readableError(error, 'No se pudo registrar el usuario') });
   }
 };
@@ -46,11 +47,15 @@ export const login = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({
       where: { email: parsed.email },
     });
-    if (!user) return res.status(400).json({ error: 'Credenciales inválidas' });
+    if (!user) return res.status(400).json({ error: 'Correo o contraseña incorrectos' });
 
     const validPassword = await bcrypt.compare(parsed.password, user.password);
     if (!validPassword)
-      return res.status(400).json({ error: 'Credenciales inválidas' });
+      return res.status(400).json({ error: 'Correo o contraseña incorrectos' });
+
+    if (user.role === 'disabled') {
+      return res.status(403).json({ error: 'Usuario desactivado' });
+    }
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
       expiresIn: '7d',

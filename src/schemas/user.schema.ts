@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const ROLES = ['user', 'moderator', 'admin'] as const;
+const ROLES = ['user', 'moderator', 'admin', 'disabled'] as const;
 
 export const userSchema = z.object({
   name: z.string().min(1),
@@ -9,6 +9,7 @@ export const userSchema = z.object({
   password: z.string().min(6),
   description: z.string().optional(),
   position: z.string(),
+  secondaryPosition: z.string().nullable().optional(),
   birthDate: z.string().transform((val) => new Date(val)),
   localityId: z.string(),
   role: z.enum(ROLES).default('user'),
@@ -19,4 +20,4 @@ export const userSchema = z.object({
 export const userUpdateSchema = userSchema
   .omit({ role: true })
   .partial()
-  .extend({ role: z.enum(ROLES).optional() });
+  .extend({ role: z.enum(ROLES).optional(), secondaryPosition: z.string().nullable().optional() });

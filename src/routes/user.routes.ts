@@ -32,6 +32,7 @@ const profileSelect = {
   locality: { select: { id: true, name: true } },
   description: true,
   position: true,
+  secondaryPosition: true,
   birthDate: true,
   ratingsGiven: { select: { matchId: true } },
   ratingsReceived: { select: { matchId: true, stars: true } },
@@ -45,6 +46,7 @@ const EDITABLE_PROFILE_FIELDS = [
   'password',
   'description',
   'position',
+  'secondaryPosition',
   'birthDate',
   'localityId',
 ] as const;
