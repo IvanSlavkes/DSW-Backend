@@ -1,7 +1,7 @@
-import { prisma } from "../lib/prisma.js";
+import { prisma } from '../lib/prisma.js';
 
 export async function getAllLocalities() {
-  return await prisma.locality.findMany({ orderBy: { name: "asc" } });
+  return await prisma.locality.findMany({ orderBy: { name: 'asc' } });
 }
 
 export async function getLocalityById(id: string) {
@@ -18,4 +18,8 @@ export async function updateLocality(id: string, data: { name?: string }) {
 
 export async function deleteLocality(id: string) {
   return await prisma.locality.delete({ where: { id } });
+}
+
+export async function countFieldsByLocality(id: string) {
+  return await prisma.field.count({ where: { localityId: id } });
 }

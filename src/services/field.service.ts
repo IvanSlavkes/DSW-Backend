@@ -1,7 +1,9 @@
 import { prisma } from '../lib/prisma.js';
 
 export async function getAllFields() {
-  return await prisma.field.findMany({ include: { locality: true, category: true } });
+  return await prisma.field.findMany({
+    include: { locality: true, category: true },
+  });
 }
 
 export async function getFieldById(id: number) {
@@ -36,4 +38,8 @@ export async function updateField(
 
 export async function deleteField(id: number) {
   return await prisma.field.delete({ where: { id } });
+}
+
+export async function countMatchesByField(id: number) {
+  return await prisma.match.count({ where: { fieldId: id } });
 }

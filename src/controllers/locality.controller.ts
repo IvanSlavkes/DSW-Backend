@@ -1,12 +1,13 @@
 import type { Request, Response } from "express";
 import fetch from "node-fetch"; 
-import { 
-  getAllLocalities, 
-  getLocalityById, 
-  createLocality, 
-  updateLocality, 
-  deleteLocality
-} from "../services/locality.service.js";
+import {
+  getAllLocalities,
+  getLocalityById,
+  createLocality,
+  updateLocality,
+  deleteLocality,
+  countFieldsByLocality
+} from '../services/locality.service.js';
 
 type LocalidadApi = {
   id: string;
@@ -75,12 +76,24 @@ export async function updateLocalityHandler(req: Request, res: Response) {
 }
 
 // Eliminar localidad
+// Eliminar localidad (no se puede si tiene canchas asociadas)
 export async function deleteLocalityHandler(req: Request, res: Response) {
-  const id = req.params.id as string;   
+  const id = req.params.id as string;
   try {
+    const fieldsCount = await countFieldsByLocality(id);
+    if (fieldsCount > 0) {
+      return res.status(409).json({
+        mensaje: `No se puede eliminar la localidad: tiene ${fieldsCount} cancha(s) asociada(s)`,
+      });
+    }
+
     await deleteLocality(id);
     res.status(204).send();
   } catch (error) {
-    res.status(404).json({ mensaje: "Localidad no encontrada" });
+    if ((error as { code?: string })?.code === "P2025") {
+      return res.status(404).json({ mensaje: "Localidad no encontrada" });
+    }
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al eliminar la localidad" });
   }
 }
