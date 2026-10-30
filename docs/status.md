@@ -1,39 +1,30 @@
-# Estado funcional y pendientes
+# Estado funcional del backend
 
-Este inventario es una lectura del código actual, no un registro de reuniones ni de asignación de tareas. Revisado el 22 de octubre de 2026.
+Inventario contrastado con el código el 29 de octubre de 2026. No es un registro de reuniones ni de asignación de tareas.
 
-## Implementado en el código
+## Funcionalidades implementadas
 
-- Registro e inicio de sesión con JWT.
-- API REST con recursos para usuarios, canchas, partidos, equipos, lugares, localidades, solicitudes de amistad, notificaciones y calificaciones.
-- Creación de partidos con validación de datos y creación atómica de dos equipos y sus lugares.
-- Tarjetas de partidos disponibles en `/matches` y en el Dashboard, con cancha, precio estimado por jugador, fecha/hora, duración, disponibilidad y creador.
-- Formularios para crear partido, perfil, cancha y otros recursos administrativos.
-- La API `GET /matches/:id` responde con datos relacionados para el detalle, aunque la interfaz todavía no la consulta desde la tarjeta.
+- Registro e inicio de sesión con JWT, hash de contraseña, validación de datos y rechazo de cuentas desactivadas.
+- Recursos REST para usuarios, localidades, categorías de cancha, canchas, partidos, equipos, posiciones, solicitudes de participación, solicitudes de amistad, notificaciones y calificaciones.
+- Creación de partidos en una transacción lógica que genera dos equipos y sus lugares de acuerdo con la categoría de cancha.
+- Listado y consulta de partido con cancha, creador, equipos, lugares e integrantes.
+- Inscripción directa a partidos públicos y solicitud con aprobación del creador para partidos privados.
+- Consulta de partidos creados o en los que participa el usuario autenticado.
+- Autorización de operaciones administrativas mediante el rol admin; consulta y edición del perfil propio.
+- Cálculo de estadísticas del usuario a partir de sus calificaciones.
+- Creación periódica de notificaciones para partidos próximos.
 
-## Acordado, pendiente de implementar
+## Reglas de acceso relevantes
 
-- Abrir un modal de detalle al elegir “Ver partido”, consultando el detalle del partido al backend y mostrando equipos enfrentados, jugadores, posiciones y lugares libres.
-- Unirse o solicitar un lugar eligiendo Equipo A o Equipo B.
-- En partidos privados, registrar la solicitud y permitir que el creador del partido la acepte o rechace.
-- Impedir que un usuario ocupe más de un lugar en el mismo partido y que cambie de equipo.
-- Actualizar el estado visual de la tarjeta y del modal según la participación o solicitud del usuario.
-- Agregar filtros funcionales al listado; hoy permite ordenar por horario o precio, pero no filtrar por localidad, posición, formato, día u hora como plantea la propuesta desactualizada.
+- La mayoría de los recursos de API requiere JWT.
+- La creación, edición y eliminación de canchas y categorías, y varias operaciones de mantenimiento, requieren administrador.
+- Los datos de perfil del usuario se editan mediante las rutas propias; el cambio de rol se reserva al administrador.
+- El inicio de sesión rechaza al usuario cuyo rol es disabled.
 
-La tabla `PositionRequest` está creada en Prisma, pero no hay rutas ni servicios para enviar, listar o resolver esas solicitudes. El botón de unión de las tarjetas todavía es solo visual.
+## Seguimiento de Regularidad
 
-## Revisión del TP pendiente
+- La propuesta actualizada debe indicar los CRUD, listados y casos de uso que el grupo presenta como alcance mínimo.
+- La interfaz tiene un listado filtrable de partidos con detalle. El panel administrativo tiene un listado filtrable de usuarios/jugadores con información expandible; confirmar con la cátedra que ese alcance satisface el segundo listado de la propuesta.
+- Los archivos disponibles no contienen minutas, tablero de seguimiento ni enlaces exactos a los PR de entrega. Deben incorporarse con información real del grupo; esta página no los sustituye.
 
-- La propuesta del grupo está desactualizada y necesita reflejar el alcance vigente y ser revisada con los docentes.
-- Mantener minutas y evidencias de coordinación queda a cargo del grupo.
-- Registrar el seguimiento de features, bugs e issues en la herramienta grupal elegida; este archivo no lo reemplaza.
-- La API no tiene documentación OpenAPI/Swagger todavía.
-- El script de `npm test` es un placeholder. Para aprobación directa, el README del TP solicita pruebas automatizadas por integrante, una prueba de integración de backend, una prueba unitaria de frontend y una prueba end-to-end, además de evidencia.
-- Aunque el JWT incluye `role`, las rutas protegidas actualmente verifican token y no hacen autorización diferenciada por rol.
-- Algunas consultas devuelven el modelo `User` completo a través de relaciones CRUD; revisar y limitar los campos sensibles antes de una entrega pública.
-
-## Observaciones técnicas para próximas iteraciones
-
-- El frontend tiene `VITE_API_URL` en su entorno local, pero `src/api/client.ts` todavía fija la URL `http://localhost:3000`.
-- La respuesta de algunos CRUD usa mensajes/campos de error en español y otros en inglés; conviene unificar el contrato API al documentar una versión estable.
-- Revisar que las rutas generales de usuarios no expongan datos sensibles al cliente; `/users/me` sí selecciona campos explícitos, mientras que algunos CRUD devuelven directamente el modelo Prisma.
+Para instalar y ejecutar el servicio, consultar [setup.md](setup.md). Para revisar relaciones y entidades, consultar [data-model.md](data-model.md).

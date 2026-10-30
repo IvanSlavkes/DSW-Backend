@@ -54,5 +54,7 @@ app.listen(PORT, () => {
     void createUpcomingMatchReminders().catch((error) =>
       console.error("Error revisando recordatorios de partidos:", error),
     );
-  }, 60_000);
+  // Neon Free escala a cero tras unos minutos inactivo; evitar una consulta
+  // constante mantiene el proyecto dormido y la demora máxima es 15 minutos.
+  }, 15 * 60_000);
 });

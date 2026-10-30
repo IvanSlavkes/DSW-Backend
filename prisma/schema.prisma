@@ -21,6 +21,7 @@ model User {
   password      String
   description   String?
   position      String
+  secondaryPosition String?
   birthDate     DateTime
   role          String   @default("user") // user | moderator | admin
 

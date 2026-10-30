@@ -1,11 +1,21 @@
 import type { Request, Response } from 'express';
+import { z } from 'zod';
+import { getAuthUserId } from '../lib/permissions.js';
 import {
   getAllRatings,
   getRatingById,
   createRating,
   updateRating,
   deleteRating,
+  RatingError,
 } from '../services/rating.service.js';
+
+const createRatingSchema = z.object({
+  matchId: z.number().int().positive(),
+  ratedId: z.number().int().positive(),
+  stars: z.number().int().min(1).max(5),
+  comment: z.string().trim().max(1000),
+});
 
 // Listar todas las calificaciones
 export async function listRatings(req: Request, res: Response) {
@@ -24,18 +34,20 @@ export async function getRatingHandler(req: Request, res: Response) {
 
 // Crear calificación
 export async function createRatingHandler(req: Request, res: Response) {
-  const { matchId, raterId, ratedId, stars, comment } = req.body;
+  const raterId = getAuthUserId(req);
+  if (!raterId) return res.status(401).json({ mensaje: 'No autorizado' });
+  const parsed = createRatingSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ errores: parsed.error.issues });
   try {
     const nuevaRating = await createRating({
-      matchId,
+      ...parsed.data,
       raterId,
-      ratedId,
-      stars,
-      comment,
     });
     res.status(201).json(nuevaRating);
   } catch (error: any) {
-    console.error(error);
+    if (error instanceof RatingError) {
+      return res.status(error.statusCode).json({ mensaje: error.message });
+    }
     if (error.code === 'P2002') {
       res.status(409).json({
         mensaje: 'Ya existe una calificación para este usuario en este partido',

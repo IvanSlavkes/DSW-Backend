@@ -3,12 +3,16 @@ import { prisma } from "../lib/prisma.js";
 const REMINDER_TYPE = "match_reminder";
 let checkInProgress = false;
 
+function isConnectionClosedError(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P1017";
+}
+
 /** Creates one in-app reminder for each user involved, about 24 hours before kickoff. */
 export async function createUpcomingMatchReminders(now = new Date()) {
   if (checkInProgress) return;
   checkInProgress = true;
   try {
-    const matches = await prisma.match.findMany({
+    const findUpcomingMatches = () => prisma.match.findMany({
       where: {
         startsAt: {
           gte: new Date(now.getTime() - 36 * 60 * 60 * 1000),
@@ -17,6 +21,16 @@ export async function createUpcomingMatchReminders(now = new Date()) {
       },
       include: { teams: { include: { positions: true, requests: true } } },
     });
+    let matches;
+    try {
+      matches = await findUpcomingMatches();
+    } catch (error) {
+      // A hosted PostgreSQL server can close an idle pooled connection. Retry
+      // once so the pool can discard it and establish a fresh connection.
+      if (!isConnectionClosedError(error)) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      matches = await findUpcomingMatches();
+    }
 
     for (const match of matches) {
       const startsAt = match.startsAt;

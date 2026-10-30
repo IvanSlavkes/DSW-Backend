@@ -8,7 +8,7 @@ export async function getAllMatches() {
       field: { include: { category: true } },
       creator: { select: publicUserSelect },
       ratings: true,
-      teams: { include: { positions: { include: { occupant: true } } } },
+      teams: { include: { positions: { include: { occupant: { select: publicUserSelect } } } } },
     }
   });
 }
@@ -32,7 +32,7 @@ export async function getMatchesForUser(userId: number) {
     },
     include: {
       field: { include: { category: true } },
-      teams: { include: { positions: { include: { occupant: true } } } },
+      teams: { include: { positions: { include: { occupant: { select: publicUserSelect } } } } },
     },
     orderBy: { startsAt: "asc" },
   });
@@ -46,7 +46,7 @@ export async function getMatchById(id: number) {
       field: { include: { category: true } },
       creator: { select: publicUserSelect },
       ratings: true,
-      teams: { include: { positions: { include: { occupant: true } } } },
+      teams: { include: { positions: { include: { occupant: { select: publicUserSelect } } } } },
     }
   });
 }

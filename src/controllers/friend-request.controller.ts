@@ -6,30 +6,41 @@ import {
   updateFriendRequest,
   deleteFriendRequest,
 } from '../services/friend-request.service.js';
+import { getAuthUserId, isAdmin } from '../lib/permissions.js';
 
 // Listar solicitudes
 export async function listFriendRequests(req: Request, res: Response) {
-  const requests = await getAllFriendRequests();
+  const userId = getAuthUserId(req);
+  if (!userId) return res.status(401).json({ mensaje: 'No autorizado' });
+  const requests = await getAllFriendRequests(isAdmin(req) ? undefined : userId);
   res.json(requests);
 }
 
 // Obtener solicitud por ID
 export async function getFriendRequestHandler(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ mensaje: 'ID invÃ¡lido' });
   const request = await getFriendRequestById(id);
   if (!request)
     return res.status(404).json({ mensaje: 'Solicitud no encontrada' });
+  const userId = getAuthUserId(req);
+  if (!isAdmin(req) && request.requesterId !== userId && request.receiverId !== userId)
+    return res.status(403).json({ mensaje: 'No tenÃ©s permiso para ver esta solicitud' });
   res.json(request);
 }
 
 // Crear solicitud
 export async function createFriendRequestHandler(req: Request, res: Response) {
-  const { requesterId, receiverId, status } = req.body;
+  const requesterId = getAuthUserId(req);
+  const receiverId = Number(req.body.receiverId);
+  if (!requesterId) return res.status(401).json({ mensaje: 'No autorizado' });
+  if (!Number.isInteger(receiverId) || receiverId < 1 || receiverId === requesterId)
+    return res.status(400).json({ mensaje: 'Destinatario invÃ¡lido' });
   try {
     const newRequest = await createFriendRequest({
       requesterId,
       receiverId,
-      status,
+      status: 'pending',
     });
     res.status(201).json(newRequest);
   } catch (error) {
@@ -41,8 +52,17 @@ export async function createFriendRequestHandler(req: Request, res: Response) {
 // Actualizar solicitud
 export async function updateFriendRequestHandler(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ mensaje: 'ID invÃ¡lido' });
+  const existing = await getFriendRequestById(id);
+  if (!existing) return res.status(404).json({ mensaje: 'Solicitud no encontrada' });
+  const userId = getAuthUserId(req);
+  if (!isAdmin(req) && existing.receiverId !== userId)
+    return res.status(403).json({ mensaje: 'Solo quien recibe la solicitud puede responderla' });
+  const status = req.body.status;
+  if (status !== 'accepted' && status !== 'rejected')
+    return res.status(400).json({ mensaje: 'El estado debe ser accepted o rejected' });
   try {
-    const updated = await updateFriendRequest(id, req.body);
+    const updated = await updateFriendRequest(id, { status });
     res.json(updated);
   } catch (error) {
     console.error(error);
@@ -53,6 +73,12 @@ export async function updateFriendRequestHandler(req: Request, res: Response) {
 // Eliminar solicitud
 export async function deleteFriendRequestHandler(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ mensaje: 'ID invÃ¡lido' });
+  const existing = await getFriendRequestById(id);
+  if (!existing) return res.status(404).json({ mensaje: 'Solicitud no encontrada' });
+  const userId = getAuthUserId(req);
+  if (!isAdmin(req) && existing.requesterId !== userId && existing.receiverId !== userId)
+    return res.status(403).json({ mensaje: 'No tenÃ©s permiso para eliminar esta solicitud' });
   try {
     await deleteFriendRequest(id);
     res.status(204).send();
