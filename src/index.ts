@@ -16,6 +16,7 @@ import authRoutes from "./routes/auth.routes.js";
 
 import verifyToken from "./middleware/auth.middleware.js";
 import { createUpcomingMatchReminders } from "./services/match-reminder.service.js";
+import { refreshScheduledMatchStatuses } from "./services/match-status.service.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,9 +48,17 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  void refreshScheduledMatchStatuses().catch((error) =>
+    console.error("Error actualizando estados de partidos:", error),
+  );
   void createUpcomingMatchReminders().catch((error) =>
     console.error("Error revisando recordatorios de partidos:", error),
   );
+  setInterval(() => {
+    void refreshScheduledMatchStatuses().catch((error) =>
+      console.error("Error actualizando estados de partidos:", error),
+    );
+  }, 60_000);
   setInterval(() => {
     void createUpcomingMatchReminders().catch((error) =>
       console.error("Error revisando recordatorios de partidos:", error),

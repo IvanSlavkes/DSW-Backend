@@ -1,8 +1,10 @@
 import { prisma } from "../lib/prisma.js";
 import { publicUserSelect } from '../lib/publicUser.js';
+import { refreshScheduledMatchStatuses } from "./match-status.service.js";
 
 // Listar todos los partidos
 export async function getAllMatches() {
+  await refreshScheduledMatchStatuses();
   return await prisma.match.findMany({
     include: {
       field: { include: { category: true } },
@@ -14,6 +16,7 @@ export async function getAllMatches() {
 }
 
 export async function getMatchesForUser(userId: number) {
+  await refreshScheduledMatchStatuses();
   return await prisma.match.findMany({
     where: {
       OR: [
@@ -40,6 +43,7 @@ export async function getMatchesForUser(userId: number) {
 
 // Obtener partido por ID
 export async function getMatchById(id: number) {
+  await refreshScheduledMatchStatuses();
   return await prisma.match.findUnique({
     where: { id },
     include: {
